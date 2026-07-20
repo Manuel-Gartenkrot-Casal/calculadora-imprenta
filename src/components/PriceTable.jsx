@@ -1,6 +1,6 @@
 import { formatCurrency } from "../utils/format";
 
-export default function PriceTable({ product }) {
+export default function PriceTable({ product, coeficiente = 1 }) {
   return (
     <div className="mt-10 border-t border-border pt-8">
       <p className="text-xs uppercase tracking-widest text-sage font-mono mb-4 font-medium">
@@ -27,7 +27,7 @@ export default function PriceTable({ product }) {
                 <td className="py-2.5 pr-3 font-medium">{p.name}</td>
                 {p.prices.map((price, j) => (
                   <td key={j} className="py-2.5 px-3 text-right tabular-nums">
-                    {formatCurrency(price)}
+                    {formatCurrency(Math.round(price * coeficiente))}
                   </td>
                 ))}
               </tr>

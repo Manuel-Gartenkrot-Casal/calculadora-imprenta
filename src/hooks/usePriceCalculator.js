@@ -3,7 +3,7 @@ import { PRODUCTS, PRICE_TIERS, DOUBLE_SIDED_SURCHARGE, SECTION_W, SECTION_H } f
 import { computeLayout } from "../utils/layout";
 import { tierIndexForSheets } from "../utils/format";
 
-export function usePriceCalculator() {
+export function usePriceCalculator(coeficiente = 1) {
   const [productId, setProductId] = useState("stickers");
   const [shape, setShape] = useState("rect");
   const [width, setWidth] = useState("5");
@@ -65,7 +65,8 @@ export function usePriceCalculator() {
     const surchargeApplied = product.doubleSided && doubleSidedPrint;
     if (surchargeApplied) subtotal *= 1 + DOUBLE_SIDED_SURCHARGE;
 
-    const total = subtotal + product.setupFee;
+    const totalBase = subtotal + product.setupFee;
+    const total = Math.round(totalBase * coeficiente);
     const pricePerUnit = total / unitsProduced;
 
     return {
@@ -76,10 +77,11 @@ export function usePriceCalculator() {
       subtotal,
       surchargeApplied,
       setupFee: product.setupFee,
+      totalBase,
       total,
       pricePerUnit,
     };
-  }, [unitsPerSheet, mode, desiredUnits, desiredSheets, paper, product, doubleSidedPrint]);
+  }, [unitsPerSheet, mode, desiredUnits, desiredSheets, paper, product, doubleSidedPrint, coeficiente]);
 
   const layout = layoutResult && !layoutResult.error ? layoutResult.section : null;
   const usedW = layoutResult?.rotated ? billH : billW;

@@ -1,5 +1,6 @@
 import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
+import { useDolar } from "./hooks/useDolar";
 import ProductSelector from "./components/ProductSelector";
 import DimensionInputs from "./components/DimensionInputs";
 import LayoutPreview from "./components/LayoutPreview";
@@ -7,7 +8,8 @@ import PriceBreakdown from "./components/PriceBreakdown";
 import PriceTable from "./components/PriceTable";
 
 export default function App() {
-  const calc = usePriceCalculator();
+  const dolar = useDolar();
+  const calc = usePriceCalculator(dolar.coeficiente);
   const { exportBudget } = useExcelExport();
 
   const handleExport = () => {
@@ -96,11 +98,12 @@ export default function App() {
             setDesiredSheets={calc.setDesiredSheets}
             priceResult={calc.priceResult}
             onExport={handleExport}
+            dolar={dolar}
           />
         )}
 
         {/* Price table */}
-        <PriceTable product={calc.product} />
+        <PriceTable product={calc.product} coeficiente={dolar.coeficiente} />
 
         {/* Footer */}
         <footer className="mt-12 pt-6 border-t border-border">

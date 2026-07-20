@@ -12,6 +12,7 @@ export default function PriceBreakdown({
   priceResult,
   onExport,
   isElectron,
+  dolar,
 }) {
   if (!priceResult) return null;
 
@@ -23,6 +24,32 @@ export default function PriceBreakdown({
       <p className="text-xs text-sage mb-6">
         Incluye entrada de maquina y armado ({formatCurrency(product.setupFee)}, fijo por pedido)
       </p>
+
+      {/* Dolar info */}
+      {dolar && (
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs font-mono">
+          <span className="bg-cream-dark border border-border px-3 py-1.5">
+            Oficial venta: <span className="font-medium">${dolar.dolarBase.toLocaleString("es-AR")}</span>
+            <span className="text-sage ml-1">(base {dolar.fechaBase})</span>
+          </span>
+          <span className="text-sage">→</span>
+          <span className="bg-cream-dark border border-border px-3 py-1.5">
+            Hoy: <span className="font-medium">${dolar.dolarActual.toLocaleString("es-AR")}</span>
+            <span className="text-sage ml-1">({dolar.fecha})</span>
+          </span>
+          {dolar.coeficiente > 1 && (
+            <>
+              <span className="text-sage">·</span>
+              <span className="bg-ink text-cream px-3 py-1.5 font-medium">
+                Coef: {dolar.coeficiente.toFixed(4)}
+              </span>
+            </>
+          )}
+          {dolar.error && (
+            <span className="text-sage italic">(sin conexion, usando ultimo valor)</span>
+          )}
+        </div>
+      )}
 
       {/* Mode selector */}
       <div className="mb-6">
@@ -132,7 +159,13 @@ export default function PriceBreakdown({
             <span className="text-sage">Entrada de maquina y armado</span>
             <span className="font-medium">{formatCurrency(priceResult.setupFee)}</span>
           </div>
-          <div className="flex justify-between py-2 px-1">
+          {dolar && dolar.coeficiente > 1 && (
+            <div className="flex justify-between border-b border-border-light py-2 px-1">
+              <span className="text-sage">Precio base</span>
+              <span className="font-medium line-through text-sage">{formatCurrency(priceResult.totalBase)}</span>
+            </div>
+          )}
+          <div className="flex justify-between border-b border-border-light py-2 px-1">
             <span className="text-sage">Precio por {product.unitSingular}</span>
             <span className="font-medium">{formatCurrencyDecimal(priceResult.pricePerUnit)}</span>
           </div>
