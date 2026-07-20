@@ -49,14 +49,14 @@ export function usePriceCalculator() {
 
     if (mode === "unidades") {
       const desired = parseInt(desiredUnits, 10);
-      if (!desired || desired <= 0) return null;
-      sheetsNeeded = Math.ceil(desired / unitsPerSheet);
+      const safeDesired = !desired || desired <= 0 ? 1 : desired;
+      sheetsNeeded = Math.ceil(safeDesired / unitsPerSheet);
       unitsProduced = sheetsNeeded * unitsPerSheet;
     } else {
       const sheets = parseInt(desiredSheets, 10);
-      if (!sheets || sheets <= 0) return null;
-      sheetsNeeded = sheets;
-      unitsProduced = sheets * unitsPerSheet;
+      const safeSheets = !sheets || sheets <= 0 ? 1 : sheets;
+      sheetsNeeded = safeSheets;
+      unitsProduced = safeSheets * unitsPerSheet;
     }
 
     const tierIdx = tierIndexForSheets(sheetsNeeded, PRICE_TIERS);
