@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const API_URL = "https://dolarapi.com/v1/dolares";
+const API_URL = "https://dolarapi.com/v1/ambito/dolares";
 const CACHE_KEY = "dolar_coefficient";
 const CACHE_TTL = 5 * 60 * 1000;
 
