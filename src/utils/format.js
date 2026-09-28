@@ -20,7 +20,7 @@ export function formatCurrencyDecimal(value) {
 }
 
 export function tierLabel(idx) {
-  const labels = ["1 a 20 hojas", "21 a 100 hojas", "101 a 200 hojas", "Mas de 201 hojas"];
+  const labels = ["1 a 20 pliegos", "21 a 100 pliegos", "101 a 200 pliegos", "201 pliegos o más"];
   return labels[idx] ?? "";
 }
 

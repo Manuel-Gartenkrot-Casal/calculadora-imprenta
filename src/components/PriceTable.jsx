@@ -1,45 +1,62 @@
+import { CaretDown } from "@phosphor-icons/react";
 import { formatCurrency } from "../utils/format";
 import { CURVE_LIMIT } from "../data/products";
 
-export default function PriceTable({ product, coeficiente = 1 }) {
-  return (
-    <div className="mt-10 card p-4 sm:p-6">
-      <p className="font-serif italic text-2xl text-ink mb-4">
-        Lista de precios por pliego - {product.label}
-        {coeficiente > 1 && ` (con coef. dolar ${coeficiente.toFixed(4)})`}
-      </p>
+const TIERS = ["1 a 20", "21 a 100", "101 a 200", "201 o más"];
 
-      <div className="overflow-x-auto -mx-4 px-4">
-        <table className="w-full text-xs font-mono min-w-[500px]">
-          <thead>
-            <tr className="border-b-2 border-sage-light">
-              <th className="py-3 pr-3 text-left font-medium text-sage">Papel</th>
-              <th className="py-3 px-3 text-right font-medium text-sage">1-20</th>
-              <th className="py-3 px-3 text-right font-medium text-sage">21-100</th>
-              <th className="py-3 px-3 text-right font-medium text-sage">101-200</th>
-              <th className="py-3 pl-3 text-right font-medium text-sage">201+</th>
-            </tr>
-          </thead>
-          <tbody>
-            {product.papers.map((p, i) => (
-              <tr key={p.id} className={`border-b border-border-light ${i % 2 === 0 ? "bg-rose-light/30" : ""}`}>
-                <td className="py-2.5 pr-3 font-medium">{p.name}</td>
-                {p.prices.map((price, j) => (
-                  <td key={j} className="py-2.5 px-3 text-right tabular-nums">
-                    {formatCurrency(Math.round(price * coeficiente))}
-                  </td>
+export default function PriceTable({ product, paperId, tierIdx, coeficiente = 1 }) {
+  return (
+    <details className="group card">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
+        <span className="font-serif text-2xl italic leading-[1.1] text-ink">Lista de precios por pliego</span>
+        <CaretDown size={20} aria-hidden="true" className="shrink-0 text-sage transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="px-4 pb-5 sm:px-5">
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <table className="w-full min-w-[520px] text-sm">
+            <caption className="sr-only">
+              {product.label}: precio por pliego según cantidad de pliegos, con el coeficiente del dólar aplicado
+            </caption>
+            <thead>
+              <tr className="border-b-2 border-sage-light text-sage">
+                <th scope="col" className="py-2 pr-3 text-left font-semibold">
+                  Papel
+                </th>
+                {TIERS.map((t, j) => (
+                  <th key={t} scope="col" className={`px-2 py-2 text-right font-semibold ${j === tierIdx ? "text-ink" : ""}`}>
+                    {t}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {product.papers.map((p) => {
+                const current = p.id === paperId;
+                return (
+                  <tr key={p.id} className={current ? "bg-rose-light/50" : ""} aria-current={current ? "true" : undefined}>
+                    <th scope="row" className={`py-2 pr-3 text-left ${current ? "font-semibold text-ink" : "font-normal text-olive"}`}>
+                      {p.name}
+                    </th>
+                    {p.prices.map((price, j) => (
+                      <td
+                        key={j}
+                        className={`px-2 py-2 text-right font-mono ${current && j === tierIdx ? "font-bold text-ink" : "text-olive"}`}
+                      >
+                        {formatCurrency(Math.round(price * coeficiente))}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-sm text-sage">
+          Con menos de {CURVE_LIMIT} pliegos, la hoja se multiplica por (1 + 1/N): 1 pliego ×2, 10 pliegos ×1,1, 50
+          pliegos ×1,02.
+          {product.doubleSided && " Frente y dorso suma un 10%."}
+        </p>
       </div>
-
-      <p className="text-xs text-sage mt-4 leading-relaxed">
-        Con menos de {CURVE_LIMIT} pliegos el precio de la hoja se multiplica por (1 + 1/N): 1 pliego ×2, 2 ×1,5,
-        10 ×1,1, 50 ×1,02.
-        {product.doubleSided && " Frente y dorso tiene un 10% de recargo."}
-      </p>
-    </div>
+    </details>
   );
 }

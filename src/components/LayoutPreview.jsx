@@ -1,28 +1,37 @@
+import { Warning } from "@phosphor-icons/react";
+
 const fmt = (n) => n.toLocaleString("es-AR", { maximumFractionDigits: 1 });
 
-function Message({ children, error }) {
+function Notice({ children, tone = "empty" }) {
   return (
     <div
-      className={`p-4 min-h-[160px] flex items-center justify-center text-sm ${
-        error ? "bg-rose-light border-2 border-rose rounded-2xl text-ink" : "text-sage italic"
+      role={tone === "error" ? "alert" : undefined}
+      className={`flex min-h-[180px] items-center justify-center gap-3 rounded-2xl p-5 text-center text-sm ${
+        tone === "error" ? "border-2 border-rose bg-rose-light text-ink" : "border-2 stitch text-sage"
       }`}
     >
-      <p>{children}</p>
+      {tone === "error" && <Warning size={22} aria-hidden="true" className="shrink-0" />}
+      <p className="text-pretty">{children}</p>
     </div>
   );
 }
 
-export default function LayoutPreview({ layout, active, sheet, product, priceResult }) {
-  if (!layout) return <Message>Carga al menos un modelo con medidas y cantidad mayores a 0.</Message>;
-  if (layout.error === "sheet") return <Message error>El pliego es mas chico que la pinza. Revisa sus medidas.</Message>;
+function Body({ layout, active, sheet, product, priceResult }) {
+  if (!layout) return <Notice>Cargá medidas y cantidad en al menos un modelo para ver el pliego.</Notice>;
+  if (layout.error === "sheet")
+    return <Notice tone="error">El pliego es más chico que la pinza. Agrandá el pliego o bajá la pinza.</Notice>;
   if (layout.error === "too-big")
-    return <Message error>{active[layout.model].name} no entra en el area util del pliego. Revisa las medidas.</Message>;
+    return (
+      <Notice tone="error">
+        {active[layout.model].name} no entra en el área útil. Achicá sus medidas o usá un pliego más grande.
+      </Notice>
+    );
   if (layout.error === "no-room")
     return (
-      <Message error>
-        No entran todos los modelos en un mismo pliego ({active[layout.model].name} se queda sin lugar). Reduci
-        medidas o saca modelos.
-      </Message>
+      <Notice tone="error">
+        No entran todos los modelos en un mismo pliego: {active[layout.model].name} se queda sin lugar. Achicá medidas o
+        quitá un modelo.
+      </Notice>
     );
 
   const { w: W, h: H, margin } = sheet;
@@ -30,68 +39,57 @@ export default function LayoutPreview({ layout, active, sheet, product, priceRes
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center bg-cream-dark/50 border-2 stitch rounded-2xl p-3 sm:p-4">
+      <dl className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-cream-dark/60 px-4 py-3">
+          <dt className="text-sm text-sage">Piezas por pliego</dt>
+          <dd className="font-mono text-3xl font-semibold text-ink">{layout.perSheet}</dd>
+        </div>
+        <div className="rounded-2xl bg-cream-dark/60 px-4 py-3">
+          <dt className="text-sm text-sage">Pliegos necesarios</dt>
+          <dd className="font-mono text-3xl font-semibold text-ink">{layout.sheets}</dd>
+        </div>
+      </dl>
+
+      <figure className="flex justify-center rounded-2xl border-2 stitch bg-cream-dark/40 p-3">
         <svg
           viewBox={`-1 -1.8 ${W + 2} ${H + 2.8}`}
-          className="w-full max-w-[420px] h-auto"
+          className="h-auto w-full max-w-[360px]"
           role="img"
-          aria-label={`Pliego ${fmt(W)} x ${fmt(H)} cm con ${layout.perSheet} piezas`}
+          aria-label={`Pliego de ${fmt(W)} por ${fmt(H)} cm con ${layout.perSheet} piezas`}
         >
           <text x={W / 2} y={-0.6} textAnchor="middle" fontSize={labelSize} className="fill-sage font-mono">
-            Pliego {fmt(W)} x {fmt(H)} cm · util {fmt(layout.usable.w)} x {fmt(layout.usable.h)} cm
+            {fmt(W)} × {fmt(H)} cm, útil {fmt(layout.usable.w)} × {fmt(layout.usable.h)}
           </text>
-          <rect x={0} y={0} width={W} height={H} fill="#fffaf0" stroke="#4a3b2b" strokeWidth={0.12} />
+          <rect x={0} y={0} width={W} height={H} strokeWidth={0.12} className="fill-paper-white stroke-ink" />
           <rect
             x={margin}
             y={margin}
             width={layout.usable.w}
             height={layout.usable.h}
             fill="none"
-            stroke="#c98b86"
             strokeWidth={0.06}
             strokeDasharray="0.4 0.3"
+            className="stroke-rose"
           />
           {layout.placements.map((p, i) => {
             const m = active[p.model];
-            const fs = Math.min(p.w / 5, p.h / 3, 1.4);
+            const fs = Math.min(p.w / 6, p.h / 3, 1.3);
+            const twoLines = p.h > fs * 3;
+            const shared = { fill: m.color, fillOpacity: 0.4, stroke: m.color, strokeWidth: 0.08 };
             return (
               <g key={i}>
                 {m.shape === "circle" ? (
-                  <circle
-                    cx={p.x + p.w / 2}
-                    cy={p.y + p.h / 2}
-                    r={Math.min(p.w, p.h) / 2}
-                    fill={m.color}
-                    fillOpacity={0.35}
-                    stroke={m.color}
-                    strokeWidth={0.08}
-                  />
+                  <circle cx={p.x + p.w / 2} cy={p.y + p.h / 2} r={Math.min(p.w, p.h) / 2} {...shared} />
                 ) : (
-                  <rect
-                    x={p.x}
-                    y={p.y}
-                    width={p.w}
-                    height={p.h}
-                    fill={m.color}
-                    fillOpacity={0.35}
-                    stroke={m.color}
-                    strokeWidth={0.08}
-                  />
+                  <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={0.15} {...shared} />
                 )}
-                <text
-                  x={p.x + p.w / 2}
-                  y={p.y + p.h / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={fs}
-                  className="fill-ink font-mono"
-                >
-                  <tspan x={p.x + p.w / 2} dy={p.h > fs * 3 ? -fs * 0.55 : 0}>
-                    {m.name}
+                <text x={p.x + p.w / 2} y={p.y + p.h / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} className="fill-ink font-mono">
+                  <tspan x={p.x + p.w / 2} dy={twoLines ? -fs * 0.55 : 0}>
+                    {m.name.length > 10 ? `${m.name.slice(0, 9)}…` : m.name}
                   </tspan>
-                  {p.h > fs * 3 && (
+                  {twoLines && (
                     <tspan x={p.x + p.w / 2} dy={fs * 1.2} fontSize={fs * 0.8} className="fill-sage">
-                      {fmt(p.w)}x{fmt(p.h)}
+                      {fmt(p.w)}×{fmt(p.h)}
                     </tspan>
                   )}
                 </text>
@@ -99,42 +97,40 @@ export default function LayoutPreview({ layout, active, sheet, product, priceRes
             );
           })}
         </svg>
-      </div>
+      </figure>
 
-      <div className="card text-center py-4 px-3 font-mono text-sm sm:text-base">
-        Rendimiento: <span className="font-bold">{layout.perSheet}</span> piezas por pliego / Total pliegos
-        necesarios: <span className="font-bold">{layout.sheets}</span>
-      </div>
-
-      <div className="text-sm font-mono text-olive">
+      <ul className="space-y-2 text-sm">
         {active.map((m, i) => (
-          <div
-            key={m.id}
-            className="flex flex-wrap justify-between items-center border-b border-border-light py-2 px-1 gap-x-3 gap-y-1"
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: m.color }} />
-              <span>
-                {m.name} · {fmt(m.w)} x {fmt(m.h)} cm
-                {m.floorApplied && <span className="text-sage"> (min. {product.minDim} cm)</span>}
+          <li key={m.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ background: m.color }} aria-hidden="true" />
+              <span className="break-words font-semibold text-ink">{m.name}</span>
+              <span className="text-sage">
+                {fmt(m.w)} × {fmt(m.h)} cm{m.floorApplied && ` (mínimo ${product.minDim} cm)`}
               </span>
             </span>
-            <span className="text-right shrink-0">
-              {layout.counts[i]} / pliego
-              {priceResult && (
-                <span className="text-sage">
-                  {" "}
-                  · {priceResult.unitsProduced[i]} de {m.qty}
-                </span>
-              )}
+            <span className="font-mono text-olive">
+              {layout.counts[i]} por pliego
+              {priceResult && `, salen ${priceResult.unitsProduced[i]} de ${m.qty}`}
             </span>
-          </div>
+          </li>
         ))}
-        <p className="text-xs text-sage mt-2">
-          {layout.grid ? "Medidas iguales: grilla optima" : "Medidas mixtas: acomodo por filas"} · todos los pliegos
-          iguales · "producidas de pedidas" por modelo.
-        </p>
-      </div>
+      </ul>
+      <p className="text-xs text-sage">
+        {layout.grid ? "Medidas iguales: se arma la grilla más eficiente." : "Medidas mixtas: se acomodan por filas buscando la menor cantidad de pliegos."}{" "}
+        Todos los pliegos salen iguales, por eso algunos modelos pueden sobrar.
+      </p>
     </div>
+  );
+}
+
+export default function LayoutPreview(props) {
+  return (
+    <section aria-labelledby="pliego-title" className="card space-y-4 p-4 sm:p-5">
+      <h2 id="pliego-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+        El pliego
+      </h2>
+      <Body {...props} />
+    </section>
   );
 }

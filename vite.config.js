@@ -12,5 +12,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    // exceljs is lazy-loaded on export, so its large chunk never blocks first paint
+    chunkSizeWarningLimit: 1000,
   },
 });

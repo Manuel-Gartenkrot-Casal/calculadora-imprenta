@@ -1,28 +1,10 @@
-const labelCls = "text-xs uppercase tracking-widest text-sage font-mono mb-2 block font-medium";
-const inputCls =
-  "w-full bg-paper-white border-2 border-border focus:border-rose focus:ring-2 focus:ring-rose/20 outline-none px-3 py-2.5 font-mono transition-all duration-200";
-const toggleCls = (on) =>
-  `py-2.5 px-4 text-sm font-medium border-2 transition-all duration-200 cursor-pointer ${
-    on ? "bg-sage text-paper-white border-sage" : "bg-paper-white border-border text-ink hover:border-rose"
-  }`;
-
-function NumberField({ label, value, onChange, step = "0.1" }) {
-  return (
-    <div>
-      <label className={labelCls}>{label}</label>
-      <input
-        type="number"
-        step={step}
-        min="0"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputCls}
-      />
-    </div>
-  );
-}
+import { CaretDown } from "@phosphor-icons/react";
+import { NumberField, Toggle } from "./Field";
 
 export default function JobSettings({
+  productOptions,
+  productId,
+  setProduct,
   product,
   paperId,
   setPaperId,
@@ -34,15 +16,26 @@ export default function JobSettings({
   setKMod,
 }) {
   return (
-    <div className="card p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-10">
-      <div className="space-y-6">
-        <div>
-          <label className={labelCls}>Papel / material (todos los modelos)</label>
-          <select
-            value={paperId}
-            onChange={(e) => setPaperId(e.target.value)}
-            className={`${inputCls} cursor-pointer`}
-          >
+    <section aria-labelledby="trabajo-title" className="card space-y-5 p-4 sm:p-6">
+      <h2 id="trabajo-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+        El trabajo
+      </h2>
+
+      <fieldset>
+        <legend className="label">Producto</legend>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {productOptions.map(([id, p]) => (
+            <Toggle key={id} pressed={productId === id} onClick={() => setProduct(id)}>
+              {p.label}
+            </Toggle>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label className="block min-w-0">
+          <span className="label">Papel (para todos los modelos)</span>
+          <select name="paper" value={paperId} onChange={(e) => setPaperId(e.target.value)} className="field cursor-pointer">
             {product.papers.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -50,54 +43,69 @@ export default function JobSettings({
             ))}
           </select>
           {product.minDim && (
-            <p className="text-xs text-sage mt-2 leading-relaxed">
-              Minimo de facturacion por pieza: {product.minDim} x {product.minDim} cm. Medidas menores
-              cotizan igual.
-            </p>
+            <span className="mt-1 block text-xs text-sage">
+              Se factura como mínimo {product.minDim} × {product.minDim} cm por pieza.
+            </span>
           )}
-        </div>
-
-        {product.doubleSided && (
-          <div>
-            <label className={labelCls}>Impresion</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => setDoubleSidedPrint(false)} className={toggleCls(!doubleSidedPrint)}>
-                Solo frente
-              </button>
-              <button onClick={() => setDoubleSidedPrint(true)} className={toggleCls(doubleSidedPrint)}>
-                Frente y dorso (+10%)
-              </button>
-            </div>
-          </div>
-        )}
+        </label>
 
         <NumberField
-          label="Recargo por modelo adicional ($)"
-          value={kMod}
-          onChange={setKMod}
+          name="kmod"
+          label="Recargo por modelo adicional"
+          suffix="$"
+          decimals={false}
           step="100"
+          value={kMod}
+          onChange={(e) => setKMod(e.target.value)}
+          hint="Se cobra desde el segundo modelo."
         />
       </div>
 
-      <div>
-        <label className={labelCls}>Pliego de maquina</label>
-        <div className="grid grid-cols-2 gap-4">
-          <NumberField label="Ancho (cm)" value={sheetInput.w} onChange={(v) => setSheetField("w", v)} />
-          <NumberField label="Alto (cm)" value={sheetInput.h} onChange={(v) => setSheetField("h", v)} />
+      {product.doubleSided && (
+        <fieldset>
+          <legend className="label">Impresión</legend>
+          <div className="grid grid-cols-2 gap-2">
+            <Toggle pressed={!doubleSidedPrint} onClick={() => setDoubleSidedPrint(false)}>
+              Solo frente
+            </Toggle>
+            <Toggle pressed={doubleSidedPrint} onClick={() => setDoubleSidedPrint(true)}>
+              Frente y dorso (+10%)
+            </Toggle>
+          </div>
+        </fieldset>
+      )}
+
+      <details className="group rounded-2xl border-2 stitch">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+          <span>
+            <span className="block font-semibold text-ink">Pliego de máquina</span>
+            <span className="block text-sm text-sage">
+              {sheetInput.w} × {sheetInput.h} cm, pinza {sheetInput.margin} mm, calle {sheetInput.gap} mm
+            </span>
+          </span>
+          <CaretDown size={20} aria-hidden="true" className="shrink-0 text-sage transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="grid grid-cols-2 gap-4 px-4 pb-4">
+          <NumberField name="sheet-w" label="Ancho" suffix="cm" value={sheetInput.w} onChange={(e) => setSheetField("w", e.target.value)} />
+          <NumberField name="sheet-h" label="Alto" suffix="cm" value={sheetInput.h} onChange={(e) => setSheetField("h", e.target.value)} />
           <NumberField
-            label="Pinza por lado (mm)"
+            name="sheet-margin"
+            label="Pinza por lado"
+            suffix="mm"
+            decimals={false}
             value={sheetInput.margin}
-            onChange={(v) => setSheetField("margin", v)}
-            step="1"
+            onChange={(e) => setSheetField("margin", e.target.value)}
           />
           <NumberField
-            label="Calle entre piezas (mm)"
+            name="sheet-gap"
+            label="Calle entre piezas"
+            suffix="mm"
+            decimals={false}
             value={sheetInput.gap}
-            onChange={(v) => setSheetField("gap", v)}
-            step="1"
+            onChange={(e) => setSheetField("gap", e.target.value)}
           />
         </div>
-      </div>
-    </div>
+      </details>
+    </section>
   );
 }

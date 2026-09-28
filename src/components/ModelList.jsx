@@ -1,92 +1,117 @@
+import { Plus, CopySimple, X, Square, Circle } from "@phosphor-icons/react";
 import { MAX_MODELS, MODEL_COLORS } from "../data/products";
+import { NumberField, Toggle } from "./Field";
 
-const inputCls =
-  "w-full bg-paper-white border-2 border-border focus:border-rose focus:ring-2 focus:ring-rose/20 outline-none px-3 py-2.5 font-mono transition-all duration-200";
-const labelCls = "text-[10px] uppercase tracking-widest text-sage font-mono mb-1 block font-medium";
+const invalid = (v) => !(parseFloat(v) > 0);
 
-export default function ModelList({ models, addModel, removeModel, updateModel, canAddModel, product }) {
+export default function ModelList({ models, addModel, duplicateModel, removeModel, updateModel, canAddModel }) {
   return (
-    <div className="mb-10">
-      <div className="flex items-baseline justify-between mb-3">
-        <label className="font-serif italic text-2xl text-ink">
-          Modelos ({models.length}/{MAX_MODELS})
-        </label>
-        <span className="text-xs text-sage italic">medidas en cm</span>
+    <section aria-labelledby="modelos-title" className="space-y-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="modelos-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+          Modelos
+        </h2>
+        <span className="text-sm text-sage">
+          {models.length} de {MAX_MODELS}
+        </span>
       </div>
 
-      <div className="space-y-3">
+      <ol className="space-y-3">
         {models.map((m, i) => {
           const color = MODEL_COLORS[i % MODEL_COLORS.length];
+          const name = m.label.trim() || `Modelo ${i + 1}`;
           const set = (key) => (e) => updateModel(m.id, { [key]: e.target.value });
+          const badQty = !(parseInt(m.qty, 10) > 0);
+          const bad = invalid(m.width) || (m.shape === "rect" && invalid(m.height)) || badQty;
           return (
-            <div
-              key={m.id}
-              className="card p-3 sm:p-4 border-l-[6px]"
-              style={{ borderLeftColor: color }}
-            >
-              <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
-                <div className="col-span-2 sm:col-span-3">
-                  <label className={labelCls}>Nombre</label>
-                  <input
-                    type="text"
-                    placeholder={`Mod ${i + 1}`}
-                    value={m.label}
-                    onChange={set("label")}
-                    className={inputCls}
-                  />
-                </div>
-                <div className="col-span-2 sm:col-span-2">
-                  <label className={labelCls}>Forma</label>
-                  <select value={m.shape} onChange={set("shape")} className={`${inputCls} cursor-pointer`}>
-                    <option value="rect">Rect.</option>
-                    <option value="circle">Círculo</option>
-                  </select>
-                </div>
-                {m.shape === "circle" ? (
-                  <div className="col-span-2 sm:col-span-4">
-                    <label className={labelCls}>Diametro</label>
-                    <input type="number" step="0.1" min="0" value={m.width} onChange={set("width")} className={inputCls} />
+            <li key={m.id} className="card border-l-[6px] p-3 sm:p-4" style={{ borderLeftColor: color }}>
+              <div className="mb-3 flex items-center gap-2">
+                <input
+                  type="text"
+                  name={`model-${m.id}-name`}
+                  autoComplete="off"
+                  aria-label={`Nombre del modelo ${i + 1}`}
+                  placeholder={`Modelo ${i + 1}…`}
+                  value={m.label}
+                  onChange={set("label")}
+                  className="field min-w-0 flex-1 font-sans font-semibold"
+                />
+                <button
+                  type="button"
+                  onClick={() => duplicateModel(m.id)}
+                  disabled={!canAddModel}
+                  aria-label={`Duplicar ${name}`}
+                  title="Duplicar"
+                  className="btn btn-ghost w-11 shrink-0 px-0"
+                >
+                  <CopySimple size={20} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeModel(m.id, name)}
+                  disabled={models.length === 1}
+                  aria-label={`Quitar ${name}`}
+                  title="Quitar"
+                  className="btn btn-ghost w-11 shrink-0 px-0"
+                >
+                  <X size={20} aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-[auto_1fr_1fr_1fr] sm:items-end">
+                <fieldset className="col-span-2 sm:col-span-1">
+                  <legend className="label">Forma</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Toggle pressed={m.shape === "rect"} onClick={() => updateModel(m.id, { shape: "rect" })} className="px-3">
+                      <Square size={18} aria-hidden="true" className="mx-auto" />
+                      <span className="sr-only">Rectangular</span>
+                    </Toggle>
+                    <Toggle pressed={m.shape === "circle"} onClick={() => updateModel(m.id, { shape: "circle" })} className="px-3">
+                      <Circle size={18} aria-hidden="true" className="mx-auto" />
+                      <span className="sr-only">Circular</span>
+                    </Toggle>
                   </div>
+                </fieldset>
+                {m.shape === "circle" ? (
+                  <NumberField
+                    className="sm:col-span-2"
+                    name={`model-${m.id}-d`}
+                    label="Diámetro"
+                    suffix="cm"
+                    value={m.width}
+                    onChange={set("width")}
+                    aria-invalid={invalid(m.width)}
+                  />
                 ) : (
                   <>
-                    <div className="sm:col-span-2">
-                      <label className={labelCls}>Ancho</label>
-                      <input type="number" step="0.1" min="0" value={m.width} onChange={set("width")} className={inputCls} />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className={labelCls}>Alto</label>
-                      <input type="number" step="0.1" min="0" value={m.height} onChange={set("height")} className={inputCls} />
-                    </div>
+                    <NumberField name={`model-${m.id}-w`} label="Ancho" suffix="cm" value={m.width} onChange={set("width")} aria-invalid={invalid(m.width)} />
+                    <NumberField name={`model-${m.id}-h`} label="Alto" suffix="cm" value={m.height} onChange={set("height")} aria-invalid={invalid(m.height)} />
                   </>
                 )}
-                <div className="sm:col-span-2">
-                  <label className={labelCls}>{product.unitPlural}</label>
-                  <input type="number" step="1" min="1" value={m.qty} onChange={set("qty")} className={inputCls} />
-                </div>
-                <div className="sm:col-span-1 flex justify-end">
-                  <button
-                    onClick={() => removeModel(m.id)}
-                    disabled={models.length === 1}
-                    aria-label={`Quitar ${m.label || `Mod ${i + 1}`}`}
-                    className="h-[38px] w-full sm:w-[38px] border-2 border-border text-sage hover:border-ink hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
-                  >
-                    ✕
-                  </button>
-                </div>
+                <NumberField
+                  className={m.shape === "circle" ? "" : "col-span-2 sm:col-span-1"}
+                  name={`model-${m.id}-qty`}
+                  label="Cantidad"
+                  suffix="u."
+                  decimals={false}
+                  min="1"
+                  value={m.qty}
+                  onChange={set("qty")}
+                  aria-invalid={badQty}
+                />
               </div>
-            </div>
+              {bad && <p className="mt-2 text-sm text-ink">Completá las medidas y la cantidad para sumar este modelo al presupuesto.</p>}
+            </li>
           );
         })}
-      </div>
+      </ol>
 
       {canAddModel && (
-        <button
-          onClick={addModel}
-          className="mt-3 w-full py-2.5 px-4 text-sm font-medium border-2 border-dashed border-sage-light text-sage bg-paper-white/60 hover:border-rose hover:text-ink transition-all duration-200 cursor-pointer"
-        >
-          + Agregar modelo
+        <button type="button" onClick={addModel} className="btn w-full border-dashed border-sage-light bg-paper-white/60 text-sage hover:border-rose hover:text-ink">
+          <Plus size={18} aria-hidden="true" />
+          Agregar modelo
         </button>
       )}
-    </div>
+    </section>
   );
 }

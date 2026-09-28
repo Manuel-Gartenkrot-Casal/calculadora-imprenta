@@ -1,65 +1,121 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import {
-  PRODUCTS,
-  PRICE_TIERS,
-  DOUBLE_SIDED_SURCHARGE,
-  CURVE_LIMIT,
-  K_MOD_DEFAULT,
-  MAX_MODELS,
-  MODEL_COLORS,
-  DEFAULT_SHEET,
-} from "../data/products";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { PRODUCTS, K_MOD_DEFAULT, MAX_MODELS, MODEL_COLORS, DEFAULT_SHEET } from "../data/products";
 import { impose } from "../utils/layout";
-import { tierIndexForSheets } from "../utils/format";
+import { computePrice } from "../utils/pricing";
+
+const STORAGE_KEY = "cotizador_job_v2";
 
 const newModel = (id) => ({ id, label: "", shape: "rect", width: "5", height: "5", qty: "500" });
 
-export function usePriceCalculator(coeficiente = 1) {
-  const [productId, setProductId] = useState("stickers");
-  const [paperId, setPaperId] = useState(PRODUCTS.stickers.papers[0].id);
-  const [doubleSidedPrint, setDoubleSidedPrint] = useState(false);
-  const [kMod, setKMod] = useState(String(K_MOD_DEFAULT));
-  const [sheetInput, setSheetInput] = useState({
-    w: String(DEFAULT_SHEET.w),
-    h: String(DEFAULT_SHEET.h),
-    margin: String(DEFAULT_SHEET.margin * 10),
-    gap: String(DEFAULT_SHEET.gap * 10),
-  });
-  const nextId = useRef(2);
-  const [models, setModels] = useState([newModel(1)]);
+function defaultJob() {
+  return {
+    productId: "stickers",
+    paperId: PRODUCTS.stickers.papers[0].id,
+    doubleSided: false,
+    kMod: String(K_MOD_DEFAULT),
+    sheet: {
+      w: String(DEFAULT_SHEET.w),
+      h: String(DEFAULT_SHEET.h),
+      margin: String(DEFAULT_SHEET.margin * 10),
+      gap: String(DEFAULT_SHEET.gap * 10),
+    },
+    models: [newModel(1)],
+  };
+}
 
-  const product = PRODUCTS[productId];
+function loadJob() {
+  try {
+    const job = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const product = PRODUCTS[job?.productId];
+    if (!product || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
+    if (!product.papers.some((p) => p.id === job.paperId)) job.paperId = product.papers[0].id;
+    return { ...defaultJob(), ...job, models: job.models.slice(0, MAX_MODELS) };
+  } catch {
+    return defaultJob();
+  }
+}
+
+const nextIdOf = (models) => Math.max(0, ...models.map((m) => m.id)) + 1;
+
+export function usePriceCalculator(coeficiente = 1) {
+  const [job, setJob] = useState(loadJob);
+  const undoRef = useRef(null);
 
   useEffect(() => {
-    setPaperId(product.papers[0].id);
-    if (!product.doubleSided) setDoubleSidedPrint(false);
-  }, [productId, product]);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(job));
+    } catch {
+      // storage unavailable: the quote still works, it just won't survive a reload
+    }
+  }, [job]);
 
-  const paper = product.papers.find((p) => p.id === paperId) || product.papers[0];
+  const update = useCallback((patch) => setJob((j) => ({ ...j, ...(typeof patch === "function" ? patch(j) : patch) })), []);
 
-  const addModel = useCallback(() => {
-    setModels((ms) => (ms.length >= MAX_MODELS ? ms : [...ms, newModel(nextId.current++)]));
+  const withUndo = useCallback(
+    (change) => {
+      undoRef.current = job;
+      setJob((j) => ({ ...j, ...change(j) }));
+    },
+    [job]
+  );
+
+  const product = PRODUCTS[job.productId];
+  const paper = product.papers.find((p) => p.id === job.paperId) || product.papers[0];
+
+  const setProduct = useCallback(
+    (id) =>
+      update((j) => ({
+        productId: id,
+        paperId: PRODUCTS[id].papers[0].id,
+        doubleSided: PRODUCTS[id].doubleSided ? j.doubleSided : false,
+      })),
+    [update]
+  );
+
+  const addModel = useCallback(
+    () => update((j) => (j.models.length >= MAX_MODELS ? {} : { models: [...j.models, newModel(nextIdOf(j.models))] })),
+    [update]
+  );
+
+  const duplicateModel = useCallback(
+    (id) =>
+      update((j) => {
+        if (j.models.length >= MAX_MODELS) return {};
+        const idx = j.models.findIndex((m) => m.id === id);
+        const copy = { ...j.models[idx], id: nextIdOf(j.models), label: j.models[idx].label ? `${j.models[idx].label} (copia)` : "" };
+        return { models: [...j.models.slice(0, idx + 1), copy, ...j.models.slice(idx + 1)] };
+      }),
+    [update]
+  );
+
+  const removeModel = useCallback(
+    (id) => withUndo((j) => (j.models.length > 1 ? { models: j.models.filter((m) => m.id !== id) } : {})),
+    [withUndo]
+  );
+
+  const resetJob = useCallback(() => withUndo(() => defaultJob()), [withUndo]);
+
+  const undoLast = useCallback(() => {
+    if (!undoRef.current) return;
+    setJob(undoRef.current);
+    undoRef.current = null;
   }, []);
-  const removeModel = useCallback((id) => {
-    setModels((ms) => (ms.length > 1 ? ms.filter((m) => m.id !== id) : ms));
-  }, []);
-  const updateModel = useCallback((id, patch) => {
-    setModels((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
-  }, []);
-  const setSheetField = useCallback((key, value) => {
-    setSheetInput((s) => ({ ...s, [key]: value }));
-  }, []);
+
+  const updateModel = useCallback(
+    (id, patch) => update((j) => ({ models: j.models.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
+    [update]
+  );
 
   const sheet = {
-    w: parseFloat(sheetInput.w) || 0,
-    h: parseFloat(sheetInput.h) || 0,
-    margin: (parseFloat(sheetInput.margin) || 0) / 10,
-    gap: (parseFloat(sheetInput.gap) || 0) / 10,
+    w: parseFloat(job.sheet.w) || 0,
+    h: parseFloat(job.sheet.h) || 0,
+    margin: (parseFloat(job.sheet.margin) || 0) / 10,
+    gap: (parseFloat(job.sheet.gap) || 0) / 10,
   };
 
   const active = useMemo(
     () =>
-      models
+      job.models
         .map((m, i) => {
           const rawW = parseFloat(m.width);
           const rawH = m.shape === "circle" ? rawW : parseFloat(m.height);
@@ -67,7 +123,7 @@ export function usePriceCalculator(coeficiente = 1) {
           const floor = (v) => (product.minDim ? Math.max(v, product.minDim) : v);
           return {
             id: m.id,
-            name: m.label.trim() || `Mod ${i + 1}`,
+            name: m.label.trim() || `Modelo ${i + 1}`,
             color: MODEL_COLORS[i % MODEL_COLORS.length],
             shape: m.shape,
             rawW,
@@ -79,7 +135,7 @@ export function usePriceCalculator(coeficiente = 1) {
           };
         })
         .filter((m) => m.rawW > 0 && m.rawH > 0 && m.qty > 0),
-    [models, product.minDim]
+    [job.models, product.minDim]
   );
 
   const layout = useMemo(
@@ -87,62 +143,36 @@ export function usePriceCalculator(coeficiente = 1) {
     [active, sheet.w, sheet.h, sheet.margin, sheet.gap]
   );
 
-  const kModValue = parseFloat(kMod) || 0;
+  const kModValue = parseFloat(job.kMod) || 0;
 
-  const priceResult = useMemo(() => {
-    if (!layout || layout.error) return null;
-    const sheetsNeeded = layout.sheets;
-    const tierIdx = tierIndexForSheets(sheetsNeeded, PRICE_TIERS);
-    const basePrice = paper.prices[tierIdx];
-    const dolarPrice = basePrice * coeficiente;
-    const curveMult = sheetsNeeded < CURVE_LIMIT ? 1 + 1 / sheetsNeeded : 1;
-    const doubleSidedMult = doubleSidedPrint ? 1 + DOUBLE_SIDED_SURCHARGE : 1;
-    const pricePerSheet = dolarPrice * curveMult * doubleSidedMult;
-    const sheetsCost = sheetsNeeded * pricePerSheet;
-    const extraModelsCost = (active.length - 1) * kModValue;
-    const total = Math.round(sheetsCost + extraModelsCost);
-    const unitsRequested = active.reduce((s, m) => s + m.qty, 0);
-
-    return {
-      sheetsNeeded,
-      tierIdx,
-      basePrice,
-      coeficiente,
-      dolarPrice,
-      curveMult,
-      doubleSidedMult,
-      pricePerSheet,
-      sheetsCost,
-      extraModels: active.length - 1,
-      kMod: kModValue,
-      extraModelsCost,
-      total,
-      unitsRequested,
-      unitsProduced: layout.counts.map((c) => c * sheetsNeeded),
-      pricePerUnit: total / unitsRequested,
-    };
-  }, [layout, paper, coeficiente, doubleSidedPrint, active, kModValue]);
+  const priceResult = useMemo(
+    () => computePrice({ layout, models: active, paper, coeficiente, doubleSided: job.doubleSided, kMod: kModValue }),
+    [layout, active, paper, coeficiente, job.doubleSided, kModValue]
+  );
 
   return {
     product,
     productOptions: Object.entries(PRODUCTS),
-    productId,
-    setProduct: setProductId,
+    productId: job.productId,
+    setProduct,
     paper,
-    paperId,
-    setPaperId,
-    doubleSidedPrint,
-    setDoubleSidedPrint,
-    kMod,
-    setKMod,
-    sheetInput,
-    setSheetField,
+    paperId: job.paperId,
+    setPaperId: (paperId) => update({ paperId }),
+    doubleSidedPrint: job.doubleSided,
+    setDoubleSidedPrint: (doubleSided) => update({ doubleSided }),
+    kMod: job.kMod,
+    setKMod: (kMod) => update({ kMod }),
+    sheetInput: job.sheet,
+    setSheetField: (key, value) => update((j) => ({ sheet: { ...j.sheet, [key]: value } })),
     sheet,
-    models,
+    models: job.models,
     addModel,
+    duplicateModel,
     removeModel,
     updateModel,
-    canAddModel: models.length < MAX_MODELS,
+    canAddModel: job.models.length < MAX_MODELS,
+    resetJob,
+    undoLast,
     active,
     layout,
     priceResult,

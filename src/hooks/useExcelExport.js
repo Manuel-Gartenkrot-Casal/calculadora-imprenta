@@ -1,6 +1,4 @@
 import { useCallback, useMemo } from "react";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
 
 const GREEN_DARK = "FF1F2A20";
 const GREEN_MED = "FF5C6B57";
@@ -32,7 +30,7 @@ function styleCurrencyCell(cell, isAlt) {
   cell.alignment = { horizontal: "right" };
 }
 
-function buildWorkbook(r, product, paper, active, layout, doubleSided) {
+function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Calculadora Imprenta";
   workbook.created = new Date();
@@ -186,7 +184,9 @@ export function useExcelExport() {
     async (r, product, paper, active, layout, doubleSided) => {
       if (!r) return;
 
-      const workbook = buildWorkbook(r, product, paper, active, layout, doubleSided);
+      // ExcelJS is ~1 MB: load it only when someone actually exports.
+      const [{ default: ExcelJS }, { saveAs }] = await Promise.all([import("exceljs"), import("file-saver")]);
+      const workbook = buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided);
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
