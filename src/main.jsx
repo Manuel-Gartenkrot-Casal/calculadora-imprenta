@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/manrope";
-import "@fontsource/shippori-mincho/500.css";
+import "@fontsource/shippori-mincho/latin-500.css";
 import "./index.css";
 import App from "./App.jsx";
 
