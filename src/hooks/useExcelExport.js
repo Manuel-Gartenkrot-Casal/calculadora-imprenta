@@ -32,7 +32,7 @@ function styleCurrencyCell(cell, isAlt) {
   cell.alignment = { horizontal: "right" };
 }
 
-function buildWorkbook(priceResult, product, paper, usedW, usedH, shape) {
+function buildWorkbook(r, product, paper, active, layout, doubleSided) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Calculadora Imprenta";
   workbook.created = new Date();
@@ -73,24 +73,28 @@ function buildWorkbook(priceResult, product, paper, usedW, usedH, shape) {
   const data = [
     ["Producto", product.label],
     ["Papel / material", paper.name],
-    ["Forma", shape === "circle" ? "Circular / troquelado" : "Rectangular"],
-    ["Medida colocada", `${usedW} x ${usedH} cm`],
-    ["Hojas necesarias", priceResult.sheetsNeeded],
-    ["Unidades producidas", priceResult.unitsProduced],
-    ["Tramo de precio", tierNames[priceResult.tierIdx]],
-    ["Precio por hoja", priceResult.pricePerSheet],
-    ["Subtotal hojas", priceResult.subtotal],
+    ["Impresion", doubleSided ? "Frente y dorso" : "Frente"],
+    ...active.map((m, i) => [
+      m.name,
+      `${m.w} x ${m.h} cm${m.shape === "circle" ? " (circular)" : ""} - ${layout.counts[i]}/pliego - ${r.unitsProduced[i]} de ${m.qty} u.`,
+    ]),
+    ["Piezas por pliego", String(layout.perSheet)],
+    ["Pliegos necesarios (N)", String(r.sheetsNeeded)],
+    ["Tramo de precio", tierNames[r.tierIdx]],
+    ["Precio lista por hoja", r.basePrice],
+    [`x Coef. dolar ${r.coeficiente.toFixed(4)}`, r.dolarPrice],
+    ["x Curva (1 + 1/N)", `x${r.curveMult.toFixed(3)}`],
   ];
 
-  if (priceResult.surchargeApplied) {
-    data.push(["Recargo frente y dorso (+10%)", priceResult.subtotal * 0.1]);
-  }
+  if (r.doubleSidedMult > 1) data.push(["x Frente y dorso", `x${r.doubleSidedMult.toFixed(2)}`]);
 
   data.push(
-    ["Entrada de maquina y armado", priceResult.setupFee],
+    ["Precio por pliego", r.pricePerSheet],
+    ["Costo pliegos", r.sheetsCost],
+    [`Modelos adicionales (${r.extraModels} x ${r.kMod})`, r.extraModelsCost],
     ["", ""],
-    ["PRECIO TOTAL", priceResult.total],
-    ["Precio por unidad", priceResult.pricePerUnit]
+    ["PRECIO TOTAL", r.total],
+    ["Precio por unidad", r.pricePerUnit]
   );
 
   data.forEach(([concepto, valor], i) => {
@@ -138,7 +142,7 @@ function buildWorkbook(priceResult, product, paper, usedW, usedH, shape) {
 
   ws2.spliceRows(1, 0, []);
   ws2.mergeCells("A1:E1");
-  ws2.getCell("A1").value = `Lista de precios por hoja (30 x 40 cm) - ${product.label}`;
+  ws2.getCell("A1").value = `Lista de precios por pliego - ${product.label}`;
   ws2.getCell("A1").font = { bold: true, size: 14, name: "Calibri", color: { argb: GREEN_DARK } };
   ws2.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
   ws2.getRow(1).height = 30;
@@ -179,10 +183,10 @@ export function useExcelExport() {
   );
 
   const exportBudget = useCallback(
-    async (priceResult, product, paper, _layout, usedW, usedH, shape) => {
-      if (!priceResult) return;
+    async (r, product, paper, active, layout, doubleSided) => {
+      if (!r) return;
 
-      const workbook = buildWorkbook(priceResult, product, paper, usedW, usedH, shape);
+      const workbook = buildWorkbook(r, product, paper, active, layout, doubleSided);
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

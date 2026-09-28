@@ -1,18 +1,25 @@
-export const SHEET_W = 30;
-export const SHEET_H = 40;
-export const GUTTER = 0.7;
-export const CENTRAL_GUTTER = 1.4;
-
-export const SECTION_W = SHEET_W;
-export const SECTION_H = (SHEET_H - CENTRAL_GUTTER) / 2;
+export const DEFAULT_SHEET = { w: 30, h: 40, margin: 0.5, gap: 0.7 };
 
 export const PRICE_TIERS = [20, 100, 200, Infinity];
 export const DOUBLE_SIDED_SURCHARGE = 0.1;
+export const CURVE_LIMIT = 100;
+export const K_MOD_DEFAULT = 5000;
+export const MAX_MODELS = 8;
+
+export const MODEL_COLORS = [
+  "#7d9a62",
+  "#d08a86",
+  "#c9a24a",
+  "#8f7fb8",
+  "#c2774f",
+  "#6f9bb0",
+  "#a86d8f",
+  "#5f7a45",
+];
 
 export const PRODUCTS = {
   stickers: {
     label: "Stickers",
-    setupFee: 30000,
     minDim: 3,
     doubleSided: false,
     unitSingular: "sticker",
@@ -29,7 +36,6 @@ export const PRODUCTS = {
   },
   tags: {
     label: "Tags / postales / tarjetas",
-    setupFee: 50000,
     minDim: 4,
     doubleSided: true,
     unitSingular: "pieza",
