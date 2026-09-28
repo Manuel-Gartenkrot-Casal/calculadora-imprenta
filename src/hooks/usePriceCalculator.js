@@ -29,6 +29,7 @@ function loadJob() {
     const product = PRODUCTS[job?.productId];
     if (!product || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
     if (!product.papers.some((p) => p.id === job.paperId)) job.paperId = product.papers[0].id;
+    if (job.kMod === "5000") job.kMod = String(K_MOD_DEFAULT);
     return { ...defaultJob(), ...job, models: job.models.slice(0, MAX_MODELS) };
   } catch {
     return defaultJob();
@@ -146,8 +147,8 @@ export function usePriceCalculator(coeficiente = 1) {
   const kModValue = parseFloat(job.kMod) || 0;
 
   const priceResult = useMemo(
-    () => computePrice({ layout, models: active, paper, coeficiente, doubleSided: job.doubleSided, kMod: kModValue }),
-    [layout, active, paper, coeficiente, job.doubleSided, kModValue]
+    () => computePrice({ layout, models: active, paper, setupFee: product.setupFee, coeficiente, doubleSided: job.doubleSided, kMod: kModValue }),
+    [layout, active, paper, product.setupFee, coeficiente, job.doubleSided, kModValue]
   );
 
   return {

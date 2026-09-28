@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlowerTulip, ArrowCounterClockwise, WhatsappLogo, Check } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, WhatsappLogo, Check } from "@phosphor-icons/react";
 import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
 import { useDolar } from "./hooks/useDolar";
@@ -61,14 +61,12 @@ export default function App() {
       </a>
 
       <div className="mx-auto max-w-6xl px-4 pb-32 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6 lg:px-8 lg:pb-12">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b-2 stitch pb-6">
+        <header className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b stitch pb-8">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-rose-light text-rose" aria-hidden="true">
-              <FlowerTulip size={28} weight="duotone" />
-            </span>
+            <span className="h-9 w-9 shrink-0 rounded-sm bg-rose" aria-hidden="true" />
             <div className="min-w-0">
-              <h1 className="font-serif text-4xl font-semibold italic leading-[1.1] text-ink sm:text-5xl">Cotizador de imprenta</h1>
-              <p className="text-sm text-sage">Hasta 8 modelos por pliego, con precio listo para mandar.</p>
+              <h1 className="font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl">Cotizador de imprenta</h1>
+              <p className="mt-1 text-sm text-sage">Hasta 8 modelos por pliego, con precio listo para mandar.</p>
             </div>
           </div>
           <button
@@ -117,13 +115,13 @@ export default function App() {
           <PriceTable product={calc.product} paperId={calc.paperId} tierIdx={r?.tierIdx ?? -1} coeficiente={dolar.coeficiente} />
         </div>
 
-        <footer className="mt-10 border-t-2 stitch pt-5 text-center font-serif text-base italic text-sage">
-          Calculadora Imprenta, hecha con cariño
+        <footer className="mt-10 border-t stitch pt-5 text-center text-xs tracking-wide text-sage">
+          Calculadora Imprenta
         </footer>
       </div>
 
       {r && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-paper-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_-16px_rgb(0_0_0/0.3)] backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-paper-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-6xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="truncate font-mono text-2xl font-bold leading-tight text-ink">{formatCurrency(r.total)}</p>

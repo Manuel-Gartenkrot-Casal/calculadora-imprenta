@@ -8,7 +8,7 @@ export default function PriceTable({ product, paperId, tierIdx, coeficiente = 1 
   return (
     <details className="group card">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
-        <span className="font-serif text-2xl italic leading-[1.1] text-ink">Lista de precios por pliego</span>
+        <span className="font-serif text-xl font-medium leading-snug text-ink">Lista de precios por pliego</span>
         <CaretDown size={20} aria-hidden="true" className="shrink-0 text-sage transition-transform group-open:rotate-180" />
       </summary>
       <div className="px-4 pb-5 sm:px-5">
@@ -18,7 +18,7 @@ export default function PriceTable({ product, paperId, tierIdx, coeficiente = 1 
               {product.label}: precio por pliego según cantidad de pliegos, con el coeficiente del dólar aplicado
             </caption>
             <thead>
-              <tr className="border-b-2 border-sage-light text-sage">
+              <tr className="border-b border-ink text-sage">
                 <th scope="col" className="py-2 pr-3 text-left font-semibold">
                   Papel
                 </th>
@@ -54,6 +54,7 @@ export default function PriceTable({ product, paperId, tierIdx, coeficiente = 1 
         <p className="mt-3 text-sm text-sage">
           Con menos de {CURVE_LIMIT} pliegos, la hoja se multiplica por (1 + 1/N): 1 pliego ×2, 10 pliegos ×1,1, 50
           pliegos ×1,02.
+          {` Entrada de máquina ${formatCurrency(product.setupFee)} por pedido.`}
           {product.doubleSided && " Frente y dorso suma un 10%."}
         </p>
       </div>

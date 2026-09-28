@@ -4,8 +4,8 @@
   "description": "Calculadora de precios para imprenta - stickers, tags, tarjetas",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f6eedf",
-  "theme_color": "#f6eedf",
+  "background_color": "#f1eee8",
+  "theme_color": "#f1eee8",
   "orientation": "portrait",
   "icons": [
     {

@@ -8,7 +8,7 @@ export default function ModelList({ models, addModel, duplicateModel, removeMode
   return (
     <section aria-labelledby="modelos-title" className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="modelos-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+        <h2 id="modelos-title" className="font-serif text-2xl font-medium leading-snug text-ink">
           Modelos
         </h2>
         <span className="text-sm text-sage">
@@ -24,7 +24,7 @@ export default function ModelList({ models, addModel, duplicateModel, removeMode
           const badQty = !(parseInt(m.qty, 10) > 0);
           const bad = invalid(m.width) || (m.shape === "rect" && invalid(m.height)) || badQty;
           return (
-            <li key={m.id} className="card border-l-[6px] p-3 sm:p-4" style={{ borderLeftColor: color }}>
+            <li key={m.id} className="card border-l-[3px] p-3 sm:p-4" style={{ borderLeftColor: color }}>
               <div className="mb-3 flex items-center gap-2">
                 <input
                   type="text"
@@ -107,7 +107,7 @@ export default function ModelList({ models, addModel, duplicateModel, removeMode
       </ol>
 
       {canAddModel && (
-        <button type="button" onClick={addModel} className="btn w-full border-dashed border-sage-light bg-paper-white/60 text-sage hover:border-rose hover:text-ink">
+        <button type="button" onClick={addModel} className="btn btn-ghost w-full border-dashed">
           <Plus size={18} aria-hidden="true" />
           Agregar modelo
         </button>

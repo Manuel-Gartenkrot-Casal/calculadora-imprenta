@@ -89,6 +89,7 @@ function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) 
   data.push(
     ["Precio por pliego", r.pricePerSheet],
     ["Costo pliegos", r.sheetsCost],
+    [`Entrada de maquina (${r.setupFee} x dolar)`, r.setupCost],
     [`Modelos adicionales (${r.extraModels} x ${r.kMod})`, r.extraModelsCost],
     ["", ""],
     ["PRECIO TOTAL", r.total],

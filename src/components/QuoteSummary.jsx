@@ -12,8 +12,8 @@ function Row({ label, value, muted }) {
 
 export default function QuoteSummary({ paper, priceResult: r, dolar, onCopy, copied, onExport }) {
   return (
-    <section aria-labelledby="presupuesto-title" className="card space-y-4 border-2 !border-rose p-4 sm:p-5">
-      <h2 id="presupuesto-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+    <section aria-labelledby="presupuesto-title" className="card space-y-4 border-t-2 !border-t-rose p-4 sm:p-5">
+      <h2 id="presupuesto-title" className="font-serif text-2xl font-medium leading-snug text-ink">
         Presupuesto
       </h2>
 
@@ -37,7 +37,7 @@ export default function QuoteSummary({ paper, priceResult: r, dolar, onCopy, cop
             </button>
           </div>
 
-          <details className="group rounded-2xl border-2 stitch">
+          <details className="group rounded-lg border stitch">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
               Cómo se calcula
               <CaretDown size={20} aria-hidden="true" className="text-sage transition-transform group-open:rotate-180" />
@@ -55,8 +55,9 @@ export default function QuoteSummary({ paper, priceResult: r, dolar, onCopy, cop
               {r.doubleSidedMult > 1 && <Row label="× frente y dorso" value={`×${r.doubleSidedMult.toFixed(2)}`} />}
               <Row label="Precio por pliego" value={formatCurrency(r.pricePerSheet)} />
               <Row label={`${r.sheetsNeeded} pliegos`} value={formatCurrency(r.sheetsCost)} />
+              <Row label={`Entrada de máquina ${formatCurrency(r.setupFee)} × dólar`} value={formatCurrency(r.setupCost)} />
               <Row label={`${r.extraModels} ${r.extraModels === 1 ? "modelo extra" : "modelos extra"} × ${formatCurrency(r.kMod)}`} value={formatCurrency(r.extraModelsCost)} muted={r.extraModels === 0} />
-              <div className="mt-1 flex justify-between gap-4 border-t-2 stitch pt-2 font-semibold text-ink">
+              <div className="mt-1 flex justify-between gap-4 border-t stitch pt-2 font-semibold text-ink">
                 <dt>Total</dt>
                 <dd className="font-mono">{formatCurrency(r.total)}</dd>
               </div>

@@ -17,7 +17,7 @@ export default function JobSettings({
 }) {
   return (
     <section aria-labelledby="trabajo-title" className="card space-y-5 p-4 sm:p-6">
-      <h2 id="trabajo-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+      <h2 id="trabajo-title" className="font-serif text-2xl font-medium leading-snug text-ink">
         El trabajo
       </h2>
 
@@ -57,7 +57,7 @@ export default function JobSettings({
           step="100"
           value={kMod}
           onChange={(e) => setKMod(e.target.value)}
-          hint="Se cobra desde el segundo modelo."
+          hint={`Desde el segundo modelo. La entrada de máquina (${product.setupFee.toLocaleString("es-AR")}) ya incluye el primero.`}
         />
       </div>
 
@@ -75,7 +75,7 @@ export default function JobSettings({
         </fieldset>
       )}
 
-      <details className="group rounded-2xl border-2 stitch">
+      <details className="group rounded-lg border stitch">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
           <span>
             <span className="block font-semibold text-ink">Pliego de máquina</span>

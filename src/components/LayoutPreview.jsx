@@ -6,8 +6,8 @@ function Notice({ children, tone = "empty" }) {
   return (
     <div
       role={tone === "error" ? "alert" : undefined}
-      className={`flex min-h-[180px] items-center justify-center gap-3 rounded-2xl p-5 text-center text-sm ${
-        tone === "error" ? "border-2 border-rose bg-rose-light text-ink" : "border-2 stitch text-sage"
+      className={`flex min-h-[180px] items-center justify-center gap-3 rounded-lg p-5 text-center text-sm ${
+        tone === "error" ? "border border-rose bg-rose-light text-ink" : "border stitch text-sage"
       }`}
     >
       {tone === "error" && <Warning size={22} aria-hidden="true" className="shrink-0" />}
@@ -40,17 +40,17 @@ function Body({ layout, active, sheet, product, priceResult }) {
   return (
     <div className="space-y-4">
       <dl className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-cream-dark/60 px-4 py-3">
+        <div className="rounded-lg bg-cream-dark/60 px-4 py-3">
           <dt className="text-sm text-sage">Piezas por pliego</dt>
           <dd className="font-mono text-3xl font-semibold text-ink">{layout.perSheet}</dd>
         </div>
-        <div className="rounded-2xl bg-cream-dark/60 px-4 py-3">
+        <div className="rounded-lg bg-cream-dark/60 px-4 py-3">
           <dt className="text-sm text-sage">Pliegos necesarios</dt>
           <dd className="font-mono text-3xl font-semibold text-ink">{layout.sheets}</dd>
         </div>
       </dl>
 
-      <figure className="flex justify-center rounded-2xl border-2 stitch bg-cream-dark/40 p-3">
+      <figure className="flex justify-center rounded-lg border stitch bg-cream-dark/40 p-3">
         <svg
           viewBox={`-1 -1.8 ${W + 2} ${H + 2.8}`}
           className="h-auto w-full max-w-[360px]"
@@ -127,7 +127,7 @@ function Body({ layout, active, sheet, product, priceResult }) {
 export default function LayoutPreview(props) {
   return (
     <section aria-labelledby="pliego-title" className="card space-y-4 p-4 sm:p-5">
-      <h2 id="pliego-title" className="font-serif text-3xl italic leading-[1.1] text-ink">
+      <h2 id="pliego-title" className="font-serif text-2xl font-medium leading-snug text-ink">
         El pliego
       </h2>
       <Body {...props} />
