@@ -77,7 +77,7 @@ export default function ShopSettings({ calc, dolar, tierIdx }) {
             </table>
           </div>
           <p className="mt-3 text-sm text-muted">
-            Con menos de {CURVE_LIMIT} pliegos la hoja se multiplica por (1 + 1/N). Frente y dorso suma 10%.
+            Con menos de {CURVE_LIMIT} pliegos la hoja se multiplica por (1 + 1/N). Frente y dorso suma 20%.
           </p>
         </div>
       </div>

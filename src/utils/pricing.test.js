@@ -48,8 +48,8 @@ describe("computePrice", () => {
       (m) => ({ ...m, w: Math.max(m.w, 4), h: Math.max(m.h, 4) })
     );
     const r = quote(models, { paper: cartulina, coeficiente: 1, doubleSided: true, setupFee: 50000, kMod: 10000 });
-    expect(r.doubleSidedMult).toBeCloseTo(1.1);
-    expect(r.total).toBe(Math.round(r.sheetsNeeded * r.basePrice * r.curveMult * 1.1 + 50000 + 7 * 10000));
+    expect(r.doubleSidedMult).toBeCloseTo(1.2);
+    expect(r.total).toBe(Math.round(r.sheetsNeeded * r.basePrice * r.curveMult * 1.2 + 50000 + 7 * 10000));
   });
 
   it("returns null when the layout failed", () => {

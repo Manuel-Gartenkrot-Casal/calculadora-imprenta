@@ -59,7 +59,7 @@ export default function StepProduct({
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               [false, "Solo frente", "Una cara impresa."],
-              [true, "Frente y dorso", "Las dos caras, +10% por hoja."],
+              [true, "Frente y dorso", "Las dos caras, +20% por hoja."],
             ].map(([value, title, sub]) => (
               <label key={title} className="choice">
                 <input type="radio" name="sides" checked={doubleSidedPrint === value} onChange={() => setDoubleSidedPrint(value)} />

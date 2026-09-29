@@ -168,7 +168,7 @@ function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) 
     const noteRow = ws2.getRow(product.papers.length + 4);
     ws2.mergeCells(`A${noteRow.number}:E${noteRow.number}`);
     noteRow.getCell(1).value =
-      "Precios de la tabla: impresion solo frente. Frente y dorso tiene un 10% de recargo.";
+      "Precios de la tabla: impresion solo frente. Frente y dorso tiene un 20% de recargo.";
     noteRow.getCell(1).font = { size: 9, italic: true, color: { argb: GREEN_MED }, name: "Calibri" };
   }
 

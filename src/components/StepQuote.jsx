@@ -53,7 +53,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
                 <Row label={`Precio de lista (${tierLabel(r.tierIdx)})`} value={formatCurrency(r.basePrice)} />
                 {r.coeficiente !== 1 && <Row label={`Ajuste dólar ×${r.coeficiente.toFixed(4)}`} value={formatCurrency(r.dolarPrice)} />}
                 {r.curveMult > 1 && <Row label={`Tirada corta ×${r.curveMult.toFixed(3)}`} value={`1 + 1/${r.sheetsNeeded}`} />}
-                {r.doubleSidedMult > 1 && <Row label="Frente y dorso" value="+10%" />}
+                {r.doubleSidedMult > 1 && <Row label="Frente y dorso" value={`+${Math.round((r.doubleSidedMult - 1) * 100)}%`} />}
                 <Row label="Precio por pliego" value={formatCurrency(r.pricePerSheet)} />
                 <Row label={`${r.sheetsNeeded} pliegos`} value={formatCurrency(r.sheetsCost)} />
                 <Row label="Entrada de máquina" value={formatCurrency(r.setupCost)} />
