@@ -36,9 +36,10 @@ describe("computePrice", () => {
       { w: 5, h: 5, qty: 250 },
       { w: 5, h: 5, qty: 100 },
     ];
-    const r = quote(models, { paper: blanco, coeficiente: 1.03, setupFee: 30000, kMod: 15000 });
+    const r = quote(models, { paper: blanco, coeficiente: 1.03, setupFee: 30000, kMod: 10000 });
     expect(r.extraModels).toBe(2);
-    expect(r.total).toBe(Math.round(115360 + 30000 * 1.03 + 2 * 15000));
+    expect(r.extraModelsCost).toBe(20000);
+    expect(r.total).toBe(Math.round(115360 + 30000 * 1.03 + 2 * 10000));
   });
 
   it("applies the double-sided surcharge on the sheet price", () => {
@@ -46,9 +47,9 @@ describe("computePrice", () => {
     const models = [{ w: 9, h: 5, qty: 300 }, { w: 10, h: 15, qty: 100 }, { w: 4, h: 4, qty: 200 }, ...five].map(
       (m) => ({ ...m, w: Math.max(m.w, 4), h: Math.max(m.h, 4) })
     );
-    const r = quote(models, { paper: cartulina, coeficiente: 1, doubleSided: true, setupFee: 50000, kMod: 15000 });
+    const r = quote(models, { paper: cartulina, coeficiente: 1, doubleSided: true, setupFee: 50000, kMod: 10000 });
     expect(r.doubleSidedMult).toBeCloseTo(1.1);
-    expect(r.total).toBe(Math.round(r.sheetsNeeded * r.basePrice * r.curveMult * 1.1 + 50000 + 7 * 15000));
+    expect(r.total).toBe(Math.round(r.sheetsNeeded * r.basePrice * r.curveMult * 1.1 + 50000 + 7 * 10000));
   });
 
   it("returns null when the layout failed", () => {

@@ -3,7 +3,7 @@ export const DEFAULT_SHEET = { w: 30, h: 40, margin: 0.5, gap: 0.7 };
 export const PRICE_TIERS = [20, 100, 200, Infinity];
 export const DOUBLE_SIDED_SURCHARGE = 0.1;
 export const CURVE_LIMIT = 100;
-export const K_MOD_DEFAULT = 15000;
+export const K_MOD_DEFAULT = 10000;
 export const MAX_MODELS = 8;
 
 export const QTY_PRESETS = [100, 250, 500, 1000];

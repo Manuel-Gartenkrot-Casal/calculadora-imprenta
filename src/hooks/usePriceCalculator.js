@@ -29,7 +29,8 @@ function loadJob() {
     const product = PRODUCTS[job?.productId];
     if (!product || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
     if (!product.papers.some((p) => p.id === job.paperId)) job.paperId = product.papers[0].id;
-    if (job.kMod === "5000") job.kMod = String(K_MOD_DEFAULT);
+    // The per-design surcharge is a shop rate, not part of a saved quote: always start from the current default.
+    job.kMod = String(K_MOD_DEFAULT);
     return { ...defaultJob(), ...job, models: job.models.slice(0, MAX_MODELS) };
   } catch {
     return defaultJob();
