@@ -6,21 +6,25 @@ export const CURVE_LIMIT = 100;
 export const K_MOD_DEFAULT = 15000;
 export const MAX_MODELS = 8;
 
+export const QTY_PRESETS = [100, 250, 500, 1000];
+
 export const MODEL_COLORS = [
-  "#7f8a6a",
-  "#a8704f",
-  "#4f6275",
-  "#b8995a",
-  "#8b7d6f",
-  "#9a5a4c",
-  "#5f7a78",
-  "#7a6a86",
+  "#2e8b3e",
+  "#e8603c",
+  "#2f6fb3",
+  "#d9a21b",
+  "#7a55b8",
+  "#1c9a9a",
+  "#c2417f",
+  "#8a5a2b",
 ];
 
 export const PRODUCTS = {
   stickers: {
     label: "Stickers",
     setupFee: 30000,
+    description: "Etiquetas autoadhesivas en papel u OPP, con cualquier forma.",
+    sizePresets: [[3, 3], [5, 5], [7, 7], [10, 10], [9, 5]],
     minDim: 3,
     doubleSided: false,
     unitSingular: "sticker",
@@ -38,6 +42,8 @@ export const PRODUCTS = {
   tags: {
     label: "Tags / postales / tarjetas",
     setupFee: 50000,
+    description: "Cartulina gruesa para tags, postales y tarjetas, frente o frente y dorso.",
+    sizePresets: [[5, 9], [9, 5], [10, 15], [6, 6]],
     minDim: 4,
     doubleSided: true,
     unitSingular: "pieza",

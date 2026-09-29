@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowCounterClockwise, WhatsappLogo, Check } from "@phosphor-icons/react";
+import { WhatsappLogo, Check, ArrowDown } from "@phosphor-icons/react";
 import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
 import { useDolar } from "./hooks/useDolar";
 import { buildWhatsAppMessage, formatCurrency } from "./utils/format";
-import JobSettings from "./components/JobSettings";
+import StepProduct from "./components/StepProduct";
 import ModelList from "./components/ModelList";
-import LayoutPreview from "./components/LayoutPreview";
-import QuoteSummary from "./components/QuoteSummary";
-import PriceTable from "./components/PriceTable";
+import StepQuote from "./components/StepQuote";
+import ShopSettings from "./components/ShopSettings";
 import Toast from "./components/Toast";
+
+const NAV = [
+  ["#producto", "Producto"],
+  ["#disenos", "Diseños"],
+  ["#presupuesto", "Presupuesto"],
+  ["#taller", "Taller"],
+];
 
 export default function App() {
   const dolar = useDolar();
@@ -56,82 +62,79 @@ export default function App() {
 
   return (
     <>
-      <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-xl focus:bg-paper-white focus:px-4 focus:py-2">
+      <a href="#producto" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
         Saltar al cotizador
       </a>
 
-      <div className="mx-auto max-w-6xl px-4 pb-32 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6 lg:px-8 lg:pb-12">
-        <header className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b stitch pb-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="h-9 w-9 shrink-0 rounded-sm bg-rose" aria-hidden="true" />
-            <div className="min-w-0">
-              <h1 className="font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl">Cotizador de imprenta</h1>
-              <p className="mt-1 text-sm text-sage">Hasta 8 modelos por pliego, con precio listo para mandar.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob)}
-            className="btn btn-ghost"
-          >
-            <ArrowCounterClockwise size={18} aria-hidden="true" />
-            Nuevo presupuesto
-          </button>
+      <nav aria-label="Pasos" className="sticky top-0 z-20 bg-bg/85 backdrop-blur pt-[env(safe-area-inset-top)]">
+        <ul className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
+          {NAV.map(([href, label]) => (
+            <li key={href}>
+              <a href={href} className="display block py-2 text-[0.7rem] text-ink underline-offset-4 hover:text-primary hover:underline sm:text-sm">
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="mx-auto max-w-6xl px-4 pb-36 sm:px-6">
+        <header className="pb-16 pt-8 sm:pb-24 sm:pt-14">
+          <h1 className="display text-ink">
+            <span className="block text-[clamp(2.1rem,7vw,5.5rem)]">Cotizá tu</span>
+            <span className="block text-[clamp(2.6rem,12vw,9.5rem)] leading-[0.9] text-primary">impresión</span>
+          </h1>
+          <p className="mt-6 max-w-[44ch] text-lg sm:text-xl">
+            Elegí el producto, cargá tus diseños y tené el precio al instante, listo para mandar por WhatsApp.
+          </p>
+          <a href="#producto" className="btn btn-ink mt-8">
+            Empezar
+            <ArrowDown size={18} aria-hidden="true" />
+          </a>
         </header>
 
-        <main id="contenido" className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
-          <div className="min-w-0 space-y-6">
-            <JobSettings
-              productOptions={calc.productOptions}
-              productId={calc.productId}
-              setProduct={calc.setProduct}
-              product={calc.product}
-              paperId={calc.paperId}
-              setPaperId={calc.setPaperId}
-              doubleSidedPrint={calc.doubleSidedPrint}
-              setDoubleSidedPrint={calc.setDoubleSidedPrint}
-              sheetInput={calc.sheetInput}
-              setSheetField={calc.setSheetField}
-              kMod={calc.kMod}
-              setKMod={calc.setKMod}
-            />
-            <ModelList
-              models={calc.models}
-              addModel={calc.addModel}
-              duplicateModel={calc.duplicateModel}
-              removeModel={(id, name) => withUndoToast(`Quitaste ${name}.`, () => calc.removeModel(id))}
-              updateModel={calc.updateModel}
-              canAddModel={calc.canAddModel}
-            />
-          </div>
-
-          <aside className="min-w-0 space-y-6 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain lg:pb-1 [scrollbar-color:var(--color-sage-light)_transparent] [scrollbar-width:thin]">
-            <QuoteSummary paper={calc.paper} priceResult={r} dolar={dolar} onCopy={handleCopy} copied={copied} onExport={handleExport} />
-            <LayoutPreview layout={calc.layout} active={calc.active} sheet={calc.sheet} product={calc.product} priceResult={r} />
-          </aside>
+        <main className="space-y-20 sm:space-y-28">
+          <StepProduct
+            productOptions={calc.productOptions}
+            productId={calc.productId}
+            setProduct={calc.setProduct}
+            product={calc.product}
+            paperId={calc.paperId}
+            setPaperId={calc.setPaperId}
+            doubleSidedPrint={calc.doubleSidedPrint}
+            setDoubleSidedPrint={calc.setDoubleSidedPrint}
+            coeficiente={dolar.coeficiente}
+          />
+          <ModelList
+            models={calc.models}
+            product={calc.product}
+            addModel={calc.addModel}
+            duplicateModel={calc.duplicateModel}
+            removeModel={(id, name) => withUndoToast(`Quitaste ${name}.`, () => calc.removeModel(id))}
+            updateModel={calc.updateModel}
+            canAddModel={calc.canAddModel}
+            onReset={() => withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob)}
+          />
+          <StepQuote calc={calc} priceResult={r} onCopy={handleCopy} copied={copied} onExport={handleExport} />
+          <ShopSettings calc={calc} dolar={dolar} tierIdx={r?.tierIdx ?? -1} />
         </main>
 
-        <div className="mt-8">
-          <PriceTable product={calc.product} paperId={calc.paperId} tierIdx={r?.tierIdx ?? -1} coeficiente={dolar.coeficiente} />
-        </div>
-
-        <footer className="mt-10 border-t stitch pt-5 text-center text-xs tracking-wide text-sage">
-          Calculadora Imprenta
-        </footer>
+        <footer className="display mt-20 border-t-2 border-ink pt-6 text-center text-xs text-muted">Calculadora Imprenta</footer>
       </div>
 
       {r && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-paper-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-6xl items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-mono text-2xl font-bold leading-tight text-ink">{formatCurrency(r.total)}</p>
-              <p className="truncate text-xs text-sage">
-                {r.sheetsNeeded} pliegos, {r.unitsRequested} unidades
-              </p>
-            </div>
-            <button type="button" onClick={handleCopy} className="btn btn-primary shrink-0">
+        <div className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-surface">
+            <a href="#presupuesto" className="min-w-0 flex-1" aria-label={`Total ${formatCurrency(r.total)}, ver presupuesto`}>
+              <span className="display block truncate text-lg leading-tight sm:text-2xl">{formatCurrency(r.total)}</span>
+              <span className="block truncate text-xs opacity-75">
+                {r.unitsRequested.toLocaleString("es-AR")} unidades, {r.sheetsNeeded} pliegos
+              </span>
+            </a>
+            <button type="button" onClick={handleCopy} className="btn btn-primary shrink-0 px-4 sm:px-6">
               {copied ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
-              {copied ? "Copiado" : "WhatsApp"}
+              <span className="hidden sm:inline">{copied ? "Copiado" : "Copiar para WhatsApp"}</span>
+              <span className="sm:hidden">{copied ? "Listo" : "WhatsApp"}</span>
             </button>
           </div>
         </div>

@@ -124,7 +124,7 @@ export function usePriceCalculator(coeficiente = 1) {
           const floor = (v) => (product.minDim ? Math.max(v, product.minDim) : v);
           return {
             id: m.id,
-            name: m.label.trim() || `Modelo ${i + 1}`,
+            name: m.label.trim() || `Diseño ${i + 1}`,
             color: MODEL_COLORS[i % MODEL_COLORS.length],
             shape: m.shape,
             rawW,
