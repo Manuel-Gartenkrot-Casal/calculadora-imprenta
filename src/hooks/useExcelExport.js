@@ -30,7 +30,8 @@ function styleCurrencyCell(cell, isAlt) {
   cell.alignment = { horizontal: "right" };
 }
 
-function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) {
+// r: overall totals; runs: one entry per paper + sides, each with its own layout and price.
+function buildWorkbook(ExcelJS, r, runs) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Calculadora Imprenta";
   workbook.created = new Date();
@@ -68,40 +69,55 @@ function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) 
   rowNum++;
 
   const tierNames = ["1-20", "21-100", "101-200", "201+"];
-  const data = [
-    ["Producto", product.label],
-    ["Papel / material", paper.name],
-    ["Impresion", doubleSided ? "Frente y dorso" : "Frente"],
-    ...active.map((m, i) => [
-      m.name,
-      `${m.w} x ${m.h} cm${m.shape === "circle" ? " (circular)" : ""} - ${layout.counts[i]}/pliego - ${r.unitsProduced[i]} de ${m.qty} u.`,
-    ]),
-    ["Piezas por pliego", String(layout.perSheet)],
-    ["Pliegos necesarios (N)", String(r.sheetsNeeded)],
-    ["Tramo de precio", tierNames[r.tierIdx]],
-    ["Precio lista por hoja", r.basePrice],
-    [`x Coef. dolar ${r.coeficiente.toFixed(4)}`, r.dolarPrice],
-    ["x Curva (1 + 1/N)", `x${r.curveMult.toFixed(3)}`],
-  ];
+  const multi = runs.length > 1;
+  const data = [];
 
-  if (r.doubleSidedMult > 1) data.push(["x Frente y dorso", `x${r.doubleSidedMult.toFixed(2)}`]);
+  runs.forEach((run, n) => {
+    const p = run.price;
+    const layout = run.layout;
+    if (multi) data.push([`TIRADA ${n + 1}: ${run.paper.name}`, "SECTION"]);
+    data.push(
+      ["Producto", run.product.label],
+      ["Papel / material", run.paper.name],
+      ["Impresion", run.doubleSided ? "Frente y dorso" : "Frente"],
+      ...run.models.map((m, i) => [
+        m.name,
+        `${m.w} x ${m.h} cm${m.shape === "circle" ? " (circular)" : ""} - ${layout.counts[i]}/pliego - ${p.unitsProduced[i]} de ${m.qty} u.`,
+      ]),
+      ["Piezas por pliego", String(layout.perSheet)],
+      ["Pliegos necesarios (N)", String(p.sheetsNeeded)],
+      ["Tramo de precio", tierNames[p.tierIdx]],
+      ["Precio lista por hoja", p.basePrice],
+      [`x Coef. dolar ${p.coeficiente.toFixed(4)}`, p.dolarPrice],
+      ["x Curva (1 + 1/N)", `x${p.curveMult.toFixed(3)}`]
+    );
+    if (p.doubleSidedMult > 1) data.push(["x Frente y dorso", `x${p.doubleSidedMult.toFixed(2)}`]);
+    data.push(
+      ["Precio por pliego", p.pricePerSheet],
+      ["Costo pliegos", p.sheetsCost],
+      [`Entrada de maquina (${p.setupFee} x dolar)`, p.setupCost],
+      [`Modelos adicionales (${p.extraModels} x ${p.kMod})`, p.extraModelsCost]
+    );
+    if (multi) data.push(["Subtotal", p.total]);
+    data.push(["", ""]);
+  });
 
-  data.push(
-    ["Precio por pliego", r.pricePerSheet],
-    ["Costo pliegos", r.sheetsCost],
-    [`Entrada de maquina (${r.setupFee} x dolar)`, r.setupCost],
-    [`Modelos adicionales (${r.extraModels} x ${r.kMod})`, r.extraModelsCost],
-    ["", ""],
-    ["PRECIO TOTAL", r.total],
-    ["Precio por unidad", r.pricePerUnit]
-  );
+  data.push(["PRECIO TOTAL", r.total], ["Precio por unidad", r.pricePerUnit]);
 
   data.forEach(([concepto, valor], i) => {
     const c1 = ws1.getCell(rowNum, 1);
     const c2 = ws1.getCell(rowNum, 2);
     c1.value = concepto;
-    c2.value = valor;
+    c2.value = valor === "SECTION" ? "" : valor;
     const isAlt = i % 2 === 0;
+
+    if (valor === "SECTION") {
+      ws1.mergeCells(rowNum, 1, rowNum, 2);
+      c1.font = { bold: true, size: 12, name: "Calibri", color: { argb: GREEN_DARK } };
+      c1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN_HIGHLIGHT } };
+      rowNum++;
+      return;
+    }
 
     if (concepto === "PRECIO TOTAL") {
       c1.font = { bold: true, size: 13, name: "Calibri", color: { argb: GREEN_DARK } };
@@ -132,45 +148,51 @@ function buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided) 
   // === Hoja 2: Lista de precios ===
   const ws2 = workbook.addWorksheet("Lista de precios", { properties: { defaultColWidth: 18 } });
   ws2.columns = [
-    { header: "Papel", key: "papel", width: 35 },
-    { header: "1-20", key: "t1", width: 14 },
-    { header: "21-100", key: "t2", width: 14 },
-    { header: "101-200", key: "t3", width: 14 },
-    { header: "201+", key: "t4", width: 14 },
+    { key: "papel", width: 35 },
+    { key: "t1", width: 14 },
+    { key: "t2", width: 14 },
+    { key: "t3", width: 14 },
+    { key: "t4", width: 14 },
   ];
 
-  ws2.spliceRows(1, 0, []);
-  ws2.mergeCells("A1:E1");
-  ws2.getCell("A1").value = `Lista de precios por pliego - ${product.label}`;
-  ws2.getCell("A1").font = { bold: true, size: 14, name: "Calibri", color: { argb: GREEN_DARK } };
-  ws2.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-  ws2.getRow(1).height = 30;
+  // One price table per product used in the quote.
+  const products = [...new Map(runs.map((run) => [run.product.label, run.product])).values()];
+  let r2 = 1;
+  products.forEach((product) => {
+    ws2.mergeCells(`A${r2}:E${r2}`);
+    ws2.getCell(`A${r2}`).value = `Lista de precios por pliego - ${product.label}`;
+    ws2.getCell(`A${r2}`).font = { bold: true, size: 14, name: "Calibri", color: { argb: GREEN_DARK } };
+    ws2.getCell(`A${r2}`).alignment = { horizontal: "center", vertical: "middle" };
+    ws2.getRow(r2).height = 30;
+    r2++;
 
-  const h2 = ws2.getRow(2);
-  ["Papel", "1-20", "21-100", "101-200", "201+"].forEach((v, i) => {
-    ws2.getCell(2, i + 1).value = v;
-  });
-  styleHeaderRow(h2);
-
-  product.papers.forEach((p, i) => {
-    const row = ws2.getRow(i + 3);
-    row.getCell(1).value = p.name;
-    styleCell(row.getCell(1), i % 2 === 0);
-    row.getCell(1).font = { bold: true, size: 10, name: "Calibri" };
-    p.prices.forEach((price, j) => {
-      const cell = row.getCell(j + 2);
-      cell.value = price;
-      styleCurrencyCell(cell, i % 2 === 0);
+    ["Papel", "1-20", "21-100", "101-200", "201+"].forEach((v, i) => {
+      ws2.getCell(r2, i + 1).value = v;
     });
-  });
+    styleHeaderRow(ws2.getRow(r2));
+    r2++;
 
-  if (product.doubleSided) {
-    const noteRow = ws2.getRow(product.papers.length + 4);
-    ws2.mergeCells(`A${noteRow.number}:E${noteRow.number}`);
-    noteRow.getCell(1).value =
-      "Precios de la tabla: impresion solo frente. Frente y dorso tiene un 20% de recargo.";
-    noteRow.getCell(1).font = { size: 9, italic: true, color: { argb: GREEN_MED }, name: "Calibri" };
-  }
+    product.papers.forEach((p, i) => {
+      const row = ws2.getRow(r2);
+      row.getCell(1).value = p.name;
+      styleCell(row.getCell(1), i % 2 === 0);
+      row.getCell(1).font = { bold: true, size: 10, name: "Calibri" };
+      p.prices.forEach((price, j) => {
+        const cell = row.getCell(j + 2);
+        cell.value = price;
+        styleCurrencyCell(cell, i % 2 === 0);
+      });
+      r2++;
+    });
+
+    if (product.doubleSided) {
+      ws2.mergeCells(`A${r2}:E${r2}`);
+      ws2.getCell(`A${r2}`).value = "Precios de la tabla: impresion solo frente. Frente y dorso tiene un 20% de recargo.";
+      ws2.getCell(`A${r2}`).font = { size: 9, italic: true, color: { argb: GREEN_MED }, name: "Calibri" };
+      r2++;
+    }
+    r2++;
+  });
 
   return workbook;
 }
@@ -182,12 +204,14 @@ export function useExcelExport() {
   );
 
   const exportBudget = useCallback(
-    async (r, product, paper, active, layout, doubleSided) => {
-      if (!r) return;
+    async (r, runs) => {
+      if (!r || !runs.length) return;
 
       // ExcelJS is ~1 MB: load it only when someone actually exports.
       const [{ default: ExcelJS }, { saveAs }] = await Promise.all([import("exceljs"), import("file-saver")]);
-      const workbook = buildWorkbook(ExcelJS, r, product, paper, active, layout, doubleSided);
+      const workbook = buildWorkbook(ExcelJS, r, runs);
+      const labels = [...new Set(runs.map((run) => run.product.label))];
+      const product = { label: labels.length === 1 ? labels[0] : "pedido" };
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

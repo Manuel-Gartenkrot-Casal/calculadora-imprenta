@@ -8,7 +8,7 @@ export function LayoutIssue({ layout, active }) {
   const text = {
     sheet: "El pliego configurado es más chico que su margen. Revisá los ajustes del taller.",
     "too-big": `${name} es más grande que el pliego. Probá con una medida más chica.`,
-    "no-room": `No entran todos los diseños en el mismo pliego: ${name} se queda sin lugar. Achicá alguna medida o quitá un diseño.`,
+    "no-room": `No entran todos los diseños de ese papel en el mismo pliego: ${name} se queda sin lugar. Achicá alguna medida, quitá un diseño o pasalo a otro papel.`,
   }[layout.error];
   return (
     <p role="alert" className="flex items-start gap-3 text-lg font-semibold">
@@ -18,13 +18,13 @@ export function LayoutIssue({ layout, active }) {
   );
 }
 
-export default function LayoutPreview({ layout, active, sheet, product, priceResult }) {
+export default function LayoutPreview({ title, layout, active, sheet, product, priceResult }) {
   const { w: W, h: H, margin } = sheet;
   const labelSize = Math.max(Math.min(W, H) / 28, 0.5);
 
   return (
     <div className="panel p-4 text-ink sm:p-6">
-      <h3 className="display mb-1 text-xl sm:text-2xl">Así queda tu pliego</h3>
+      <h3 className="display mb-1 text-xl sm:text-2xl">{title ? `Pliego: ${title}` : "Así queda tu pliego"}</h3>
       <p className="mb-5 text-sm text-muted">
         Entran {layout.perSheet} piezas por pliego y hacen falta {layout.sheets} pliegos.
       </p>

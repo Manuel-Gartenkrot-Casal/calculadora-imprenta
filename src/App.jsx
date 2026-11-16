@@ -4,15 +4,13 @@ import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
 import { useDolar } from "./hooks/useDolar";
 import { buildWhatsAppMessage, formatCurrency } from "./utils/format";
-import StepProduct from "./components/StepProduct";
 import ModelList from "./components/ModelList";
 import StepQuote from "./components/StepQuote";
 import ShopSettings from "./components/ShopSettings";
 import Toast from "./components/Toast";
 
 const NAV = [
-  ["#producto", "Producto"],
-  ["#disenos", "Diseños"],
+  ["#pedido", "Pedido"],
   ["#presupuesto", "Presupuesto"],
   ["#taller", "Taller"],
 ];
@@ -33,10 +31,10 @@ export default function App() {
 
   const r = calc.priceResult;
 
-  const handleExport = () => exportBudget(r, calc.product, calc.paper, calc.active, calc.layout, calc.doubleSidedPrint);
+  const handleExport = () => exportBudget(r, calc.runs);
 
   const handleCopy = async () => {
-    const text = buildWhatsAppMessage({ models: calc.active, paper: calc.paper, doubleSided: calc.doubleSidedPrint, result: r });
+    const text = buildWhatsAppMessage({ runs: calc.runs, result: r });
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -62,7 +60,7 @@ export default function App() {
 
   return (
     <>
-      <a href="#producto" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
+      <a href="#pedido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
         Saltar al cotizador
       </a>
 
@@ -87,36 +85,27 @@ export default function App() {
           <p className="mt-6 max-w-[44ch] text-lg sm:text-xl">
             Elegí el producto, cargá tus diseños y tené el precio al instante, listo para mandar por WhatsApp.
           </p>
-          <a href="#producto" className="btn btn-ink mt-8">
+          <a href="#pedido" className="btn btn-ink mt-8">
             Empezar
             <ArrowDown size={18} aria-hidden="true" />
           </a>
         </header>
 
         <main className="space-y-20 sm:space-y-28">
-          <StepProduct
-            productOptions={calc.productOptions}
-            productId={calc.productId}
-            setProduct={calc.setProduct}
-            product={calc.product}
-            paperId={calc.paperId}
-            setPaperId={calc.setPaperId}
-            doubleSidedPrint={calc.doubleSidedPrint}
-            setDoubleSidedPrint={calc.setDoubleSidedPrint}
-            coeficiente={dolar.coeficiente}
-          />
           <ModelList
             models={calc.models}
-            product={calc.product}
+            productOptions={calc.productOptions}
+            coeficiente={dolar.coeficiente}
             addModel={calc.addModel}
             duplicateModel={calc.duplicateModel}
             removeModel={(id, name) => withUndoToast(`Quitaste ${name}.`, () => calc.removeModel(id))}
             updateModel={calc.updateModel}
+            setModelProduct={calc.setModelProduct}
             canAddModel={calc.canAddModel}
             onReset={() => withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob)}
           />
           <StepQuote calc={calc} priceResult={r} onCopy={handleCopy} copied={copied} onExport={handleExport} />
-          <ShopSettings calc={calc} dolar={dolar} tierIdx={r?.tierIdx ?? -1} />
+          <ShopSettings calc={calc} dolar={dolar} />
         </main>
 
         <footer className="display mt-20 border-t-2 border-ink pt-6 text-center text-xs text-muted">Calculadora Imprenta</footer>

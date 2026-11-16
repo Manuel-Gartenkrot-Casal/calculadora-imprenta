@@ -4,7 +4,7 @@ export const PRICE_TIERS = [20, 100, 200, Infinity];
 export const DOUBLE_SIDED_SURCHARGE = 0.2;
 export const CURVE_LIMIT = 100;
 export const K_MOD_DEFAULT = 10000;
-export const MAX_MODELS = 8;
+export const MAX_MODELS = 12;
 
 export const QTY_PRESETS = [100, 250, 500, 1000];
 
@@ -17,6 +17,10 @@ export const MODEL_COLORS = [
   "#1c9a9a",
   "#c2417f",
   "#8a5a2b",
+  "#5e8c1f",
+  "#b5462e",
+  "#3a4fa3",
+  "#9a7d12",
 ];
 
 export const PRODUCTS = {

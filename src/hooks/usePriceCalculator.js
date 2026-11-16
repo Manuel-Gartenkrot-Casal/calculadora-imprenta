@@ -3,15 +3,39 @@ import { PRODUCTS, K_MOD_DEFAULT, MAX_MODELS, MODEL_COLORS, DEFAULT_SHEET } from
 import { impose } from "../utils/layout";
 import { computePrice } from "../utils/pricing";
 
-const STORAGE_KEY = "cotizador_job_v2";
+const STORAGE_KEY = "cotizador_job_v3";
+const LEGACY_KEY = "cotizador_job_v2";
 
-const newModel = (id) => ({ id, label: "", shape: "rect", width: "5", height: "5", qty: "500" });
+const DEFAULT_PRODUCT = "stickers";
+
+// Each item carries its own product, paper and sides, so one quote can mix stickers and tags.
+const newModel = (id, from) => ({
+  id,
+  label: "",
+  productId: from?.productId ?? DEFAULT_PRODUCT,
+  paperId: from?.paperId ?? PRODUCTS[DEFAULT_PRODUCT].papers[0].id,
+  doubleSided: from?.doubleSided ?? false,
+  shape: "rect",
+  width: "5",
+  height: "5",
+  qty: "500",
+});
+
+// Keep an item's product, paper and sides consistent with the catalog.
+function normalizeModel(m) {
+  const product = PRODUCTS[m.productId] ? m.productId : DEFAULT_PRODUCT;
+  const papers = PRODUCTS[product].papers;
+  return {
+    ...newModel(m.id),
+    ...m,
+    productId: product,
+    paperId: papers.some((p) => p.id === m.paperId) ? m.paperId : papers[0].id,
+    doubleSided: PRODUCTS[product].doubleSided ? !!m.doubleSided : false,
+  };
+}
 
 function defaultJob() {
   return {
-    productId: "stickers",
-    paperId: PRODUCTS.stickers.papers[0].id,
-    doubleSided: false,
     kMod: String(K_MOD_DEFAULT),
     sheet: {
       w: String(DEFAULT_SHEET.w),
@@ -23,21 +47,37 @@ function defaultJob() {
   };
 }
 
+function readStored() {
+  const job = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if (job) return job;
+  // Older quotes had one product/paper for the whole job: hand it down to every item.
+  const old = JSON.parse(localStorage.getItem(LEGACY_KEY));
+  if (!old || !Array.isArray(old.models)) return null;
+  return {
+    ...old,
+    models: old.models.map((m) => ({ ...m, productId: old.productId, paperId: old.paperId, doubleSided: old.doubleSided })),
+  };
+}
+
 function loadJob() {
   try {
-    const job = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    const product = PRODUCTS[job?.productId];
-    if (!product || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
-    if (!product.papers.some((p) => p.id === job.paperId)) job.paperId = product.papers[0].id;
-    // The per-design surcharge is a shop rate, not part of a saved quote: always start from the current default.
-    job.kMod = String(K_MOD_DEFAULT);
-    return { ...defaultJob(), ...job, models: job.models.slice(0, MAX_MODELS) };
+    const job = readStored();
+    if (!job || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
+    return {
+      ...defaultJob(),
+      sheet: job.sheet,
+      // The per-design surcharge is a shop rate, not part of a saved quote: always start from the current default.
+      kMod: String(K_MOD_DEFAULT),
+      models: job.models.slice(0, MAX_MODELS).map(normalizeModel),
+    };
   } catch {
     return defaultJob();
   }
 }
 
 const nextIdOf = (models) => Math.max(0, ...models.map((m) => m.id)) + 1;
+
+export const runKey = (m) => `${m.productId}|${m.paperId}|${m.doubleSided ? 2 : 1}`;
 
 export function usePriceCalculator(coeficiente = 1) {
   const [job, setJob] = useState(loadJob);
@@ -61,21 +101,12 @@ export function usePriceCalculator(coeficiente = 1) {
     [job]
   );
 
-  const product = PRODUCTS[job.productId];
-  const paper = product.papers.find((p) => p.id === job.paperId) || product.papers[0];
-
-  const setProduct = useCallback(
-    (id) =>
-      update((j) => ({
-        productId: id,
-        paperId: PRODUCTS[id].papers[0].id,
-        doubleSided: PRODUCTS[id].doubleSided ? j.doubleSided : false,
-      })),
-    [update]
-  );
-
+  // New items start with the same material as the last one, which is the common case.
   const addModel = useCallback(
-    () => update((j) => (j.models.length >= MAX_MODELS ? {} : { models: [...j.models, newModel(nextIdOf(j.models))] })),
+    () =>
+      update((j) =>
+        j.models.length >= MAX_MODELS ? {} : { models: [...j.models, newModel(nextIdOf(j.models), j.models[j.models.length - 1])] }
+      ),
     [update]
   );
 
@@ -104,21 +135,32 @@ export function usePriceCalculator(coeficiente = 1) {
   }, []);
 
   const updateModel = useCallback(
-    (id, patch) => update((j) => ({ models: j.models.map((m) => (m.id === id ? { ...m, ...patch } : m)) })),
+    (id, patch) => update((j) => ({ models: j.models.map((m) => (m.id === id ? normalizeModel({ ...m, ...patch }) : m)) })),
     [update]
   );
 
-  const sheet = {
-    w: parseFloat(job.sheet.w) || 0,
-    h: parseFloat(job.sheet.h) || 0,
-    margin: (parseFloat(job.sheet.margin) || 0) / 10,
-    gap: (parseFloat(job.sheet.gap) || 0) / 10,
-  };
+  // Switching product resets the paper to that product's first one.
+  const setModelProduct = useCallback(
+    (id, productId) => updateModel(id, { productId, paperId: PRODUCTS[productId].papers[0].id }),
+    [updateModel]
+  );
+
+  const sheet = useMemo(
+    () => ({
+      w: parseFloat(job.sheet.w) || 0,
+      h: parseFloat(job.sheet.h) || 0,
+      margin: (parseFloat(job.sheet.margin) || 0) / 10,
+      gap: (parseFloat(job.sheet.gap) || 0) / 10,
+    }),
+    [job.sheet]
+  );
 
   const active = useMemo(
     () =>
       job.models
         .map((m, i) => {
+          const product = PRODUCTS[m.productId];
+          const paper = product.papers.find((p) => p.id === m.paperId) || product.papers[0];
           const rawW = parseFloat(m.width);
           const rawH = m.shape === "circle" ? rawW : parseFloat(m.height);
           const qty = parseInt(m.qty, 10);
@@ -127,6 +169,10 @@ export function usePriceCalculator(coeficiente = 1) {
             id: m.id,
             name: m.label.trim() || `Diseño ${i + 1}`,
             color: MODEL_COLORS[i % MODEL_COLORS.length],
+            productId: m.productId,
+            product,
+            paper,
+            doubleSided: m.doubleSided,
             shape: m.shape,
             rawW,
             rawH,
@@ -137,31 +183,51 @@ export function usePriceCalculator(coeficiente = 1) {
           };
         })
         .filter((m) => m.rawW > 0 && m.rawH > 0 && m.qty > 0),
-    [job.models, product.minDim]
-  );
-
-  const layout = useMemo(
-    () => (active.length ? impose(active, sheet) : null),
-    [active, sheet.w, sheet.h, sheet.margin, sheet.gap]
+    [job.models]
   );
 
   const kModValue = parseFloat(job.kMod) || 0;
 
-  const priceResult = useMemo(
-    () => computePrice({ layout, models: active, paper, setupFee: product.setupFee, coeficiente, doubleSided: job.doubleSided, kMod: kModValue }),
-    [layout, active, paper, product.setupFee, coeficiente, job.doubleSided, kModValue]
-  );
+  // Items with the same product, paper and sides share sheets: each group is one print run
+  // with its own sheet count, price tier, machine setup and per-design surcharge.
+  const runs = useMemo(() => {
+    const byKey = new Map();
+    for (const m of active) {
+      const key = runKey(m);
+      if (!byKey.has(key)) byKey.set(key, { key, product: m.product, paper: m.paper, doubleSided: m.doubleSided, models: [] });
+      byKey.get(key).models.push(m);
+    }
+    return [...byKey.values()].map((run) => {
+      const layout = impose(run.models, sheet);
+      const price = computePrice({
+        layout,
+        models: run.models,
+        paper: run.paper,
+        setupFee: run.product.setupFee,
+        coeficiente,
+        doubleSided: run.doubleSided,
+        kMod: kModValue,
+      });
+      return { ...run, layout, price };
+    });
+  }, [active, sheet, coeficiente, kModValue]);
+
+  const priceResult = useMemo(() => {
+    if (!runs.length || runs.some((r) => !r.price)) return null;
+    const total = runs.reduce((s, r) => s + r.price.total, 0);
+    const unitsRequested = runs.reduce((s, r) => s + r.price.unitsRequested, 0);
+    return {
+      total,
+      unitsRequested,
+      sheetsNeeded: runs.reduce((s, r) => s + r.price.sheetsNeeded, 0),
+      pricePerUnit: total / unitsRequested,
+    };
+  }, [runs]);
+
+  const failedRun = runs.find((r) => !r.price) || null;
 
   return {
-    product,
     productOptions: Object.entries(PRODUCTS),
-    productId: job.productId,
-    setProduct,
-    paper,
-    paperId: job.paperId,
-    setPaperId: (paperId) => update({ paperId }),
-    doubleSidedPrint: job.doubleSided,
-    setDoubleSidedPrint: (doubleSided) => update({ doubleSided }),
     kMod: job.kMod,
     setKMod: (kMod) => update({ kMod }),
     sheetInput: job.sheet,
@@ -172,11 +238,13 @@ export function usePriceCalculator(coeficiente = 1) {
     duplicateModel,
     removeModel,
     updateModel,
+    setModelProduct,
     canAddModel: job.models.length < MAX_MODELS,
     resetJob,
     undoLast,
     active,
-    layout,
+    runs,
+    failedRun,
     priceResult,
   };
 }

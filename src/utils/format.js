@@ -30,25 +30,41 @@ export function tierIndexForSheets(sheets, tiers) {
 
 const cm = (n) => n.toLocaleString("es-AR");
 
-export function buildWhatsAppMessage({ models, paper, doubleSided, result }) {
+// A print run groups the items that share product, paper and sides.
+export function runTitle(run) {
+  return `${run.paper.name}${run.product.doubleSided ? (run.doubleSided ? ", frente y dorso" : ", solo frente") : ""}`;
+}
+
+function runLines(run, withSubtotal) {
+  const models = run.models;
   const n = models.length;
   const totalUnits = models.reduce((s, m) => s + m.qty, 0);
   const medidas = models.map((m) => `${m.name}: ${cm(m.rawW)} x ${cm(m.rawH)} cm`).join("; ");
   const detalle = models.map((m) => `${m.name}: ${m.qty} u.`).join(", ");
+  return [
+    `• *Producto:* ${run.product.label} (${n} ${n === 1 ? "modelo" : "modelos"})`,
+    `• *Papel:* ${run.paper.name}`,
+    `• *Impresión:* ${run.doubleSided ? "Frente y dorso" : "Frente"}`,
+    `• *Medidas:* ${medidas}`,
+    `• *Cantidad:* ${totalUnits} u. (${detalle})`,
+    ...(withSubtotal ? [`• *Subtotal:* ${formatCurrency(run.price.total)}`] : []),
+  ];
+}
+
+export function buildWhatsAppMessage({ runs, result }) {
+  const multi = runs.length > 1;
+  const detalle = multi
+    ? runs.flatMap((run, i) => [`*${i + 1}. ${runTitle(run)}*`, ...runLines(run, true), ""])
+    : [...runLines(runs[0], false), ""];
 
   return [
     "¡Hola! 👋 Te paso el presupuesto detallado de tu pedido:",
     "",
     "📄 *Detalle del trabajo:*",
-    `• *Producto:* Impresión personalizada (${n} ${n === 1 ? "modelo" : "modelos"})`,
-    `• *Medidas:* ${medidas}`,
-    `• *Papel:* ${paper.name}`,
-    `• *Impresión:* ${doubleSided ? "Frente y dorso" : "Frente"}`,
-    `• *Cantidad:* ${totalUnits} u. en total (${detalle})`,
-    "",
+    ...detalle,
     "💰 *Presupuesto:*",
     `• *Total:* ${formatCurrency(result.total)}`,
-    `• *Valor unitario:* ${formatCurrencyDecimal(result.pricePerUnit)} por unidad`,
+    ...(multi ? [] : [`• *Valor unitario:* ${formatCurrencyDecimal(result.pricePerUnit)} por unidad`]),
     "",
     "📌 Cotización calculada sobre pliegos optimizados. Válido por 48 hs.",
   ].join("\n");
