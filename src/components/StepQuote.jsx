@@ -1,10 +1,10 @@
-import { WhatsappLogo, EnvelopeSimple, FileXls, Check, CaretDown } from "@phosphor-icons/react";
+import { WhatsappLogo, EnvelopeSimple, FileXls, Check, CaretDown, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, QUOTE_CONDITIONS } from "../utils/format";
 import LayoutPreview, { LayoutIssue } from "./LayoutPreview";
 
 function Row({ label, value }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-on-primary/25 py-2">
+    <div className="flex justify-between gap-4 border-b border-surface/15 py-2">
       <dt>{label}</dt>
       <dd className="text-right font-semibold">{value}</dd>
     </div>
@@ -34,29 +34,29 @@ function RunBreakdown({ run }) {
   );
 }
 
-export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExport }) {
+export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExport, onNew }) {
   const { runs, failedRun, active } = calc;
   const ok = !!r;
   const multi = runs.length > 1;
   return (
     <section id="presupuesto" aria-labelledby="presupuesto-title" className="space-y-6">
-      <div className="bg-primary px-5 py-8 text-on-primary sm:px-10 sm:py-12">
-        <p className="display mb-4 flex items-center gap-3 text-sm">
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-on-primary text-primary" aria-hidden="true">
-            2
+      <div className="bg-ink px-5 py-10 text-surface sm:px-12 sm:py-14">
+        <p className="mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] opacity-80">
+          <span className="font-display text-lg tracking-normal text-primary" aria-hidden="true">
+            02
           </span>
           <span id="presupuesto-title">Tu presupuesto</span>
         </p>
 
         {ok ? (
           <>
-            <p aria-live="polite" className="display break-words text-[clamp(2.75rem,11vw,7.5rem)] leading-[0.9]">
+            <p aria-live="polite" className="display break-words text-[clamp(2.6rem,9vw,5.5rem)] leading-none">
               {formatCurrency(r.total)}
             </p>
             {multi ? (
               <ul className="mt-5 max-w-2xl space-y-1 text-base">
                 {runs.map((run) => (
-                  <li key={run.key} className="flex justify-between gap-4 border-b border-on-primary/25 py-1.5">
+                  <li key={run.key} className="flex justify-between gap-4 border-b border-surface/15 py-1.5">
                     <span>
                       <span className="font-semibold">{runTitle(run)}</span>
                       <span className="opacity-85">, {run.price.unitsRequested.toLocaleString("es-AR")} u.</span>
@@ -73,22 +73,26 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
             )}
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" onClick={() => onCopy("whatsapp")} className="btn bg-on-primary text-primary hover:bg-ink hover:text-surface">
+              <button type="button" onClick={() => onCopy("whatsapp")} className="btn btn-primary">
                 {copied === "whatsapp" ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
                 {copied === "whatsapp" ? "Copiado" : "Copiar para WhatsApp"}
               </button>
-              <button type="button" onClick={() => onCopy("mail")} className="btn border-on-primary text-on-primary hover:bg-on-primary hover:text-primary">
+              <button type="button" onClick={() => onCopy("mail")} className="btn border-surface/30 text-surface hover:border-surface">
                 {copied === "mail" ? <Check size={20} aria-hidden="true" /> : <EnvelopeSimple size={20} aria-hidden="true" />}
                 {copied === "mail" ? "Copiado" : "Copiar para mail"}
               </button>
-              <button type="button" onClick={onExport} className="btn border-on-primary text-on-primary hover:bg-on-primary hover:text-primary">
+              <button type="button" onClick={onExport} className="btn border-surface/30 text-surface hover:border-surface">
                 <FileXls size={20} aria-hidden="true" />
                 Descargar Excel
               </button>
+              <button type="button" onClick={onNew} className="btn text-surface/70 underline-offset-4 hover:text-surface hover:underline">
+                <ArrowCounterClockwise size={18} aria-hidden="true" />
+                Nuevo presupuesto
+              </button>
             </div>
 
-            <dl className="mt-8 max-w-2xl border-t-2 border-on-primary/40 pt-4 text-sm">
-              <p className="display mb-2 text-xs">Condiciones</p>
+            <dl className="mt-8 max-w-2xl border-t border-surface/20 pt-4 text-sm">
+              <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] opacity-70">Condiciones</p>
               {QUOTE_CONDITIONS.map(([k, v]) => (
                 <div key={k} className="flex flex-col gap-0.5 py-1 sm:flex-row sm:gap-3">
                   <dt className="shrink-0 font-semibold sm:w-40">{k}</dt>
@@ -98,19 +102,19 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
             </dl>
 
             <details className="group mt-8 max-w-xl">
-              <summary className="display flex cursor-pointer list-none items-center gap-2 text-sm [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] opacity-80 hover:opacity-100 [&::-webkit-details-marker]:hidden">
                 Ver cómo se calcula
                 <CaretDown size={18} aria-hidden="true" className="transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-4 space-y-6">
                 {runs.map((run) => (
                   <div key={run.key}>
-                    {multi && <h3 className="display mb-1 text-sm">{runTitle(run)}</h3>}
+                    {multi && <h3 className="display mb-1 text-base">{runTitle(run)}</h3>}
                     <RunBreakdown run={run} />
                   </div>
                 ))}
                 {multi && (
-                  <div className="flex justify-between gap-4 border-t-2 border-on-primary pt-3 text-base font-bold">
+                  <div className="flex justify-between gap-4 border-t border-surface/40 pt-3 text-base font-bold">
                     <span>Total</span>
                     <span>{formatCurrency(r.total)}</span>
                   </div>

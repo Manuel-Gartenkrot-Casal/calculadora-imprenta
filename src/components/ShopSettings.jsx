@@ -24,13 +24,13 @@ export default function ShopSettings({ calc, dolar }) {
         <CaretDown size={24} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
       </summary>
 
-      <div className="space-y-8 border-t-2 border-ink p-5 sm:p-6">
+      <div className="space-y-8 border-t border-ink p-5 sm:p-6">
         <div>
           <h3 className="display mb-3 text-lg">Pliego y calle por producto</h3>
           <div className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
             <table className="w-full min-w-[420px] text-sm">
               <thead>
-                <tr className="border-b-2 border-ink">
+                <tr className="border-b border-ink">
                   <th scope="col" className="py-2 pr-3 text-left">Producto</th>
                   <th scope="col" className="px-2 py-2 text-right">Pliego</th>
                   <th scope="col" className="px-2 py-2 text-right">Calle entre piezas</th>
@@ -78,7 +78,7 @@ export default function ShopSettings({ calc, dolar }) {
                 <table className="w-full min-w-[520px] text-sm">
                   <caption className="sr-only">Precio por pliego según cantidad de pliegos, con el coeficiente del dólar aplicado</caption>
                   <thead>
-                    <tr className="border-b-2 border-ink">
+                    <tr className="border-b border-ink">
                       <th scope="col" className="py-2 pr-3 text-left">
                         Papel
                       </th>

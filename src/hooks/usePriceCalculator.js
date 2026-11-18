@@ -167,7 +167,8 @@ export function usePriceCalculator(coeficiente = 1) {
     [withUndo]
   );
 
-  const resetJob = useCallback(() => withUndo(() => defaultJob()), [withUndo]);
+  // A new quote clears the order but keeps the shop's settings (pinza, surcharge).
+  const resetJob = useCallback(() => withUndo((j) => ({ models: defaultJob().models, sheet: j.sheet, kMod: j.kMod })), [withUndo]);
 
   const undoLast = useCallback(() => {
     if (!undoRef.current) return;

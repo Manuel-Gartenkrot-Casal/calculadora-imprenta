@@ -15,7 +15,7 @@ export default function Toast({ toast, onClose }) {
       className="pointer-events-none fixed inset-x-0 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-30 flex justify-center px-4"
     >
       {toast && (
-        <div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-full border-2 border-ink bg-surface py-1.5 pl-5 pr-1.5 text-sm font-semibold text-ink">
+        <div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-sm border border-line-soft shadow-lg shadow-ink/10 bg-surface py-1.5 pl-5 pr-1.5 text-sm font-semibold text-ink">
           <span className="min-w-0 flex-1">{toast.message}</span>
           {toast.action && (
             <button type="button" onClick={toast.action.onClick} className="btn btn-primary min-h-[40px] px-4 py-1">

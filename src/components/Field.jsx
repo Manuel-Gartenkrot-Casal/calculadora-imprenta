@@ -27,15 +27,12 @@ export function Chip({ pressed, onClick, children }) {
 
 export function StepTitle({ n, id, children, hint }) {
   return (
-    <header className="mb-6 flex items-start gap-4 sm:mb-8">
-      <span
-        className="display grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ink text-lg text-surface sm:h-14 sm:w-14 sm:text-xl"
-        aria-hidden="true"
-      >
-        {n}
+    <header className="mb-8 flex items-start gap-5 border-b border-line-soft pb-6 sm:mb-10">
+      <span className="display mt-1 shrink-0 text-2xl text-primary sm:text-3xl" aria-hidden="true">
+        {String(n).padStart(2, "0")}
       </span>
       <div className="min-w-0">
-        <h2 id={id} className="display text-3xl text-ink sm:text-5xl">
+        <h2 id={id} className="display text-3xl text-ink sm:text-4xl">
           {children}
         </h2>
         {hint && <p className="mt-2 max-w-[60ch] text-base text-muted">{hint}</p>}

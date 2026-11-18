@@ -109,9 +109,9 @@ export default function ModelList({
           const title = groups.length > 1 ? `Trabajo ${gi + 1}` : "Tu trabajo";
           const color = MODEL_COLORS[first.index % MODEL_COLORS.length];
           return (
-            <li key={g.id} className="panel relative p-4 sm:p-6" style={{ boxShadow: `8px 8px 0 ${multi ? "var(--color-ink)" : color}` }}>
+            <li key={g.id} className="panel relative p-5 sm:p-8" style={{ borderTop: `2px solid ${multi ? "var(--color-ink)" : color}` }}>
               <div className="mb-5 flex items-center gap-3">
-                <h3 className="display min-w-0 flex-1 text-lg">{title}</h3>
+                <h3 className="display min-w-0 flex-1 text-xl">{title}</h3>
                 {groups.length > 1 && (
                   <button type="button" onClick={() => removeGroup(g.id, title)} aria-label={`Quitar ${title}`} title="Quitar trabajo" className="btn btn-outline btn-icon shrink-0">
                     <X size={18} aria-hidden="true" />
@@ -130,7 +130,7 @@ export default function ModelList({
               </div>
 
               {/* 2. Papel e impresión */}
-              <div className="mb-6 grid gap-5 border-b-2 border-line-soft pb-6 lg:grid-cols-2">
+              <div className="mb-6 grid gap-5 border-b border-line-soft pb-6 lg:grid-cols-2">
                 <div>
                   <label className="block">
                     <span className="label">Papel</span>
@@ -172,7 +172,7 @@ export default function ModelList({
               </div>
 
               {/* 3. Cantidad de modelos */}
-              <div className="mb-6 border-b-2 border-line-soft pb-6">
+              <div className="mb-6 border-b border-line-soft pb-6">
                 <span className="label">¿Cuántos modelos?</span>
                 <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Cantidad de modelos de ${title}`}>
                   {COUNT_PRESETS.filter((n) => n <= maxCount).map((n) => (
@@ -217,7 +217,7 @@ export default function ModelList({
                     const mColor = MODEL_COLORS[m.index % MODEL_COLORS.length];
                     const name = m.label.trim() || `Modelo ${mi + 1}`;
                     return (
-                      <li key={m.id} className="rounded-2xl border-2 border-line-soft p-4" style={{ borderLeft: `8px solid ${mColor}` }}>
+                      <li key={m.id} className="border border-line-soft p-4 sm:p-5" style={{ borderLeft: `3px solid ${mColor}` }}>
                         <div className="mb-4 flex items-center gap-3">
                           <input
                             type="text"
@@ -228,7 +228,7 @@ export default function ModelList({
                             title="Podés ponerle un nombre"
                             value={m.label}
                             onChange={(e) => updateModel(m.id, { label: e.target.value })}
-                            className="field min-w-0 flex-1 border-0 border-b-2 !px-0 font-display text-base uppercase tracking-tight !shadow-none"
+                            className="field min-w-0 flex-1 border-0 border-b !px-0 font-display text-lg !shadow-none"
                           />
                           <button type="button" onClick={() => removeModel(m.id, name)} aria-label={`Quitar ${name}`} title="Quitar modelo" className="btn btn-outline btn-icon shrink-0">
                             <X size={16} aria-hidden="true" />
@@ -263,9 +263,9 @@ export default function ModelList({
         <span className="text-sm text-muted">
           {totalModels} de {MAX_MODELS} modelos
         </span>
-        <button type="button" onClick={onReset} className="btn ml-auto px-3 text-muted underline-offset-4 hover:text-ink hover:underline">
+        <button type="button" onClick={onReset} className="btn btn-outline ml-auto">
           <ArrowCounterClockwise size={16} aria-hidden="true" />
-          Empezar de nuevo
+          Nuevo presupuesto
         </button>
       </div>
       {canAdd && <p className="mt-2 text-xs text-muted">Otro trabajo = otro producto o papel (por ejemplo, tags además de stickers).</p>}

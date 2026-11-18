@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { WhatsappLogo, Check, ArrowDown } from "@phosphor-icons/react";
+import { WhatsappLogo, Check, ArrowDown, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
 import { useDolar } from "./hooks/useDolar";
@@ -59,31 +59,46 @@ export default function App() {
     });
   };
 
+  // Clear the order (shop settings stay) and go back to the top to start the next quote.
+  const handleNew = () => {
+    withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob);
+    setCopied(null);
+    document.getElementById("pedido")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <>
-      <a href="#pedido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2">
+      <a href="#pedido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-40 focus:rounded-sm focus:bg-surface focus:px-4 focus:py-2">
         Saltar al cotizador
       </a>
 
-      <nav aria-label="Pasos" className="sticky top-0 z-20 bg-bg/85 backdrop-blur pt-[env(safe-area-inset-top)]">
-        <ul className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
-          {NAV.map(([href, label]) => (
-            <li key={href}>
-              <a href={href} className="display block py-2 text-[0.7rem] text-ink underline-offset-4 hover:text-primary hover:underline sm:text-sm">
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+      <nav aria-label="Pasos" className="sticky top-0 z-20 border-b border-line-soft bg-bg/90 backdrop-blur pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2 sm:px-6">
+          <ul className="flex flex-1 items-center gap-4 sm:gap-8">
+            {NAV.map(([href, label]) => (
+              <li key={href}>
+                <a href={href} className="block py-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted hover:text-ink sm:text-xs">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={handleNew} className="btn btn-outline shrink-0 px-3 sm:px-4" title="Borrar todo y empezar otro presupuesto">
+            <ArrowCounterClockwise size={16} aria-hidden="true" />
+            <span className="hidden sm:inline">Nuevo presupuesto</span>
+            <span className="sm:hidden">Nuevo</span>
+          </button>
+        </div>
       </nav>
 
       <div className="mx-auto max-w-6xl px-4 pb-36 sm:px-6">
-        <header className="pb-16 pt-8 sm:pb-24 sm:pt-14">
-          <h1 className="display text-ink">
-            <span className="block text-[clamp(2.1rem,7vw,5.5rem)]">Cotizá tu</span>
-            <span className="block text-[clamp(2.6rem,12vw,9.5rem)] leading-[0.9] text-primary">impresión</span>
+        <header className="pb-16 pt-14 sm:pb-24 sm:pt-24">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.24em] text-muted">Imprenta · Presupuestos</p>
+          <h1 className="display text-[clamp(2.4rem,7vw,4.75rem)] leading-[1.1] text-ink">
+            Cotizá tu <span className="text-primary">impresión</span>
           </h1>
-          <p className="mt-6 max-w-[44ch] text-lg sm:text-xl">
+          <span className="mt-8 block h-px w-16 bg-ink" aria-hidden="true" />
+          <p className="mt-8 max-w-[44ch] text-base leading-relaxed text-muted sm:text-lg">
             Elegí el producto, cargá tus diseños y tené el precio al instante, listo para mandar por WhatsApp.
           </p>
           <a href="#pedido" className="btn btn-ink mt-8">
@@ -105,18 +120,18 @@ export default function App() {
             updateModel={calc.updateModel}
             updateGroup={calc.updateGroup}
             setGroupProduct={calc.setGroupProduct}
-            onReset={() => withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob)}
+            onReset={handleNew}
           />
-          <StepQuote calc={calc} priceResult={r} onCopy={handleCopy} copied={copied} onExport={handleExport} />
+          <StepQuote calc={calc} priceResult={r} onCopy={handleCopy} copied={copied} onExport={handleExport} onNew={handleNew} />
           <ShopSettings calc={calc} dolar={dolar} />
         </main>
 
-        <footer className="display mt-20 border-t-2 border-ink pt-6 text-center text-xs text-muted">Calculadora Imprenta</footer>
+        <footer className="mt-24 border-t border-line-soft pt-6 text-center text-[0.68rem] uppercase tracking-[0.24em] text-muted">Calculadora Imprenta</footer>
       </div>
 
       {r && (
         <div className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-full bg-ink py-2 pl-5 pr-2 text-surface">
+          <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-sm bg-ink py-2 pl-5 pr-2 text-surface shadow-lg shadow-ink/10">
             <a href="#presupuesto" className="min-w-0 flex-1" aria-label={`Total ${formatCurrency(r.total)}, ver presupuesto`}>
               <span className="display block truncate text-lg leading-tight sm:text-2xl">{formatCurrency(r.total)}</span>
               <span className="block truncate text-xs opacity-75">

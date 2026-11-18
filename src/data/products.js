@@ -9,19 +9,20 @@ export const MAX_MODELS = 12;
 
 export const QTY_PRESETS = [100, 250, 500, 1000];
 
+// Earthy, muted tones so the sheet preview stays calm but each design is still easy to tell apart.
 export const MODEL_COLORS = [
-  "#2e8b3e",
-  "#e8603c",
-  "#2f6fb3",
-  "#d9a21b",
-  "#7a55b8",
-  "#1c9a9a",
-  "#c2417f",
-  "#8a5a2b",
-  "#5e8c1f",
-  "#b5462e",
-  "#3a4fa3",
-  "#9a7d12",
+  "#9a7354",
+  "#4a4640",
+  "#6b7f8e",
+  "#7d8a5c",
+  "#b5674d",
+  "#8c7a9b",
+  "#c2a36b",
+  "#4f6b63",
+  "#9b5d5d",
+  "#5d6b8c",
+  "#a68a64",
+  "#6e5a4a",
 ];
 
 export const PRODUCTS = {

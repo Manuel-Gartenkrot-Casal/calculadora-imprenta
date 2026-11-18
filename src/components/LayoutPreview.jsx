@@ -69,7 +69,7 @@ export default function LayoutPreview({ title, layout, active, sheet, product, p
           {active.map((m, i) => {
             const produced = priceResult?.unitsProduced[i];
             return (
-              <li key={m.id} className="border-b-2 border-line-soft pb-3 last:border-0">
+              <li key={m.id} className="border-b border-line-soft pb-3 last:border-0">
                 <p className="flex items-center gap-2 font-bold">
                   <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ background: m.color }} aria-hidden="true" />
                   <span className="break-words">{m.name}</span>
