@@ -2,7 +2,7 @@
 export const DEFAULT_SHEET = { margin: 0.5 };
 
 export const PRICE_TIERS = [20, 100, 200, Infinity];
-export const DOUBLE_SIDED_SURCHARGE = 0.2;
+export const DOUBLE_SIDED_SURCHARGE = 0.3; // frente y dorso: +30%
 export const CURVE_LIMIT = 100;
 export const K_MOD_DEFAULT = 10000;
 export const MAX_MODELS = 12;

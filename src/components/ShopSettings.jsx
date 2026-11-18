@@ -1,7 +1,7 @@
 import { CaretDown } from "@phosphor-icons/react";
 import { NumberField } from "./Field";
 import { formatCurrency } from "../utils/format";
-import { CURVE_LIMIT } from "../data/products";
+import { CURVE_LIMIT, DOUBLE_SIDED_SURCHARGE } from "../data/products";
 
 const TIERS = ["1 a 20", "21 a 100", "101 a 200", "201 o más"];
 
@@ -112,7 +112,7 @@ export default function ShopSettings({ calc, dolar }) {
             </div>
           ))}
           <p className="text-sm text-muted">
-            Con menos de {CURVE_LIMIT} pliegos la hoja se multiplica por (1 + 1/N). Frente y dorso suma 20%.
+            Con menos de {CURVE_LIMIT} pliegos la hoja se multiplica por (1 + 1/N). Frente y dorso suma {Math.round(DOUBLE_SIDED_SURCHARGE * 100)}%.
           </p>
         </div>
       </div>

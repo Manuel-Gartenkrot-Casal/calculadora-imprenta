@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { QUOTE_CONDITIONS } from "../utils/format";
+import { DOUBLE_SIDED_SURCHARGE } from "../data/products";
 
 const GREEN_DARK = "FF1F2A20";
 const GREEN_MED = "FF5C6B57";
@@ -210,7 +211,7 @@ function buildWorkbook(ExcelJS, r, runs) {
 
     if (product.doubleSided) {
       ws2.mergeCells(`A${r2}:E${r2}`);
-      ws2.getCell(`A${r2}`).value = "Precios de la tabla: impresion solo frente. Frente y dorso tiene un 20% de recargo.";
+      ws2.getCell(`A${r2}`).value = `Precios de la tabla: impresion solo frente. Frente y dorso tiene un ${Math.round(DOUBLE_SIDED_SURCHARGE * 100)}% de recargo.`;
       ws2.getCell(`A${r2}`).font = { size: 9, italic: true, color: { argb: GREEN_MED }, name: "Calibri" };
       r2++;
     }

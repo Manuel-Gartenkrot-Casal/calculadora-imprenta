@@ -1,5 +1,5 @@
 import { Plus, Minus, X, ArrowCounterClockwise } from "@phosphor-icons/react";
-import { MAX_MODELS, MODEL_COLORS, PRODUCTS, QTY_PRESETS } from "../data/products";
+import { MAX_MODELS, MODEL_COLORS, PRODUCTS, QTY_PRESETS, DOUBLE_SIDED_SURCHARGE } from "../data/products";
 import { NumberField, Chip, StepTitle } from "./Field";
 import { formatCurrency } from "../utils/format";
 
@@ -162,7 +162,7 @@ export default function ModelList({
                         Solo frente
                       </Chip>
                       <Chip pressed={first.doubleSided} onClick={() => updateGroup(g.id, { doubleSided: true })}>
-                        Frente y dorso (+20%)
+                        Frente y dorso (+{Math.round(DOUBLE_SIDED_SURCHARGE * 100)}%)
                       </Chip>
                     </div>
                   ) : (
