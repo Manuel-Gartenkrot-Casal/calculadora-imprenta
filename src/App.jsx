@@ -3,7 +3,7 @@ import { WhatsappLogo, Check, ArrowDown } from "@phosphor-icons/react";
 import { usePriceCalculator } from "./hooks/usePriceCalculator";
 import { useExcelExport } from "./hooks/useExcelExport";
 import { useDolar } from "./hooks/useDolar";
-import { buildWhatsAppMessage, formatCurrency } from "./utils/format";
+import { buildWhatsAppMessage, buildEmailMessage, formatCurrency } from "./utils/format";
 import ModelList from "./components/ModelList";
 import StepQuote from "./components/StepQuote";
 import ShopSettings from "./components/ShopSettings";
@@ -20,12 +20,12 @@ export default function App() {
   const calc = usePriceCalculator(dolar.coeficiente);
   const { exportBudget } = useExcelExport();
   const [toast, setToast] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(null); // "whatsapp" | "mail" | null
   const closeToast = useCallback(() => setToast(null), []);
 
   useEffect(() => {
     if (!copied) return;
-    const t = setTimeout(() => setCopied(false), 2500);
+    const t = setTimeout(() => setCopied(null), 2500);
     return () => clearTimeout(t);
   }, [copied]);
 
@@ -33,12 +33,13 @@ export default function App() {
 
   const handleExport = () => exportBudget(r, calc.runs);
 
-  const handleCopy = async () => {
-    const text = buildWhatsAppMessage({ runs: calc.runs, result: r });
+  const handleCopy = async (target = "whatsapp") => {
+    const mail = target === "mail";
+    const text = (mail ? buildEmailMessage : buildWhatsAppMessage)({ runs: calc.runs, result: r });
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setToast({ message: "Presupuesto copiado. Pegalo en el chat de WhatsApp." });
+      setCopied(target);
+      setToast({ message: mail ? "Presupuesto copiado. Pegalo en el mail." : "Presupuesto copiado. Pegalo en el chat de WhatsApp." });
     } catch {
       setToast({ message: "No se pudo copiar. Probá de nuevo o descargá el Excel." });
     }
@@ -120,10 +121,10 @@ export default function App() {
                 {r.unitsRequested.toLocaleString("es-AR")} unidades, {r.sheetsNeeded} pliegos
               </span>
             </a>
-            <button type="button" onClick={handleCopy} className="btn btn-primary shrink-0 px-4 sm:px-6">
-              {copied ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
-              <span className="hidden sm:inline">{copied ? "Copiado" : "Copiar para WhatsApp"}</span>
-              <span className="sm:hidden">{copied ? "Listo" : "WhatsApp"}</span>
+            <button type="button" onClick={() => handleCopy("whatsapp")} className="btn btn-primary shrink-0 px-4 sm:px-6">
+              {copied === "whatsapp" ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
+              <span className="hidden sm:inline">{copied === "whatsapp" ? "Copiado" : "Copiar para WhatsApp"}</span>
+              <span className="sm:hidden">{copied === "whatsapp" ? "Listo" : "WhatsApp"}</span>
             </button>
           </div>
         </div>

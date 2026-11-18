@@ -1,4 +1,4 @@
-import { WhatsappLogo, FileXls, Check, CaretDown } from "@phosphor-icons/react";
+import { WhatsappLogo, EnvelopeSimple, FileXls, Check, CaretDown } from "@phosphor-icons/react";
 import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, QUOTE_CONDITIONS } from "../utils/format";
 import LayoutPreview, { LayoutIssue } from "./LayoutPreview";
 
@@ -73,9 +73,13 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
             )}
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" onClick={onCopy} className="btn bg-on-primary text-primary hover:bg-ink hover:text-surface">
-                {copied ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
-                {copied ? "Copiado" : "Copiar para WhatsApp"}
+              <button type="button" onClick={() => onCopy("whatsapp")} className="btn bg-on-primary text-primary hover:bg-ink hover:text-surface">
+                {copied === "whatsapp" ? <Check size={20} aria-hidden="true" /> : <WhatsappLogo size={20} aria-hidden="true" />}
+                {copied === "whatsapp" ? "Copiado" : "Copiar para WhatsApp"}
+              </button>
+              <button type="button" onClick={() => onCopy("mail")} className="btn border-on-primary text-on-primary hover:bg-on-primary hover:text-primary">
+                {copied === "mail" ? <Check size={20} aria-hidden="true" /> : <EnvelopeSimple size={20} aria-hidden="true" />}
+                {copied === "mail" ? "Copiado" : "Copiar para mail"}
               </button>
               <button type="button" onClick={onExport} className="btn border-on-primary text-on-primary hover:bg-on-primary hover:text-primary">
                 <FileXls size={20} aria-hidden="true" />
