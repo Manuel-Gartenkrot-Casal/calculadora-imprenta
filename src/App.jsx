@@ -94,15 +94,17 @@ export default function App() {
 
         <main className="space-y-20 sm:space-y-28">
           <ModelList
-            models={calc.models}
+            groups={calc.groups}
+            totalModels={calc.models.length}
             productOptions={calc.productOptions}
             coeficiente={dolar.coeficiente}
-            addModel={calc.addModel}
-            duplicateModel={calc.duplicateModel}
+            addGroup={calc.addGroup}
+            removeGroup={(id, name) => withUndoToast(`Quitaste ${name.toLowerCase()}.`, () => calc.removeGroup(id))}
+            setGroupCount={calc.setGroupCount}
             removeModel={(id, name) => withUndoToast(`Quitaste ${name}.`, () => calc.removeModel(id))}
             updateModel={calc.updateModel}
-            setModelProduct={calc.setModelProduct}
-            canAddModel={calc.canAddModel}
+            updateGroup={calc.updateGroup}
+            setGroupProduct={calc.setGroupProduct}
             onReset={() => withUndoToast("Empezaste un presupuesto nuevo.", calc.resetJob)}
           />
           <StepQuote calc={calc} priceResult={r} onCopy={handleCopy} copied={copied} onExport={handleExport} />
