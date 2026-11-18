@@ -39,12 +39,7 @@ function normalizeModel(m) {
 function defaultJob() {
   return {
     kMod: String(K_MOD_DEFAULT),
-    sheet: {
-      w: String(DEFAULT_SHEET.w),
-      h: String(DEFAULT_SHEET.h),
-      margin: String(DEFAULT_SHEET.margin * 10),
-      gap: String(DEFAULT_SHEET.gap * 10),
-    },
+    sheet: { margin: String(DEFAULT_SHEET.margin * 10) },
     models: [newModel(1)],
   };
 }
@@ -78,7 +73,8 @@ function loadJob() {
     if (!job || !Array.isArray(job.models) || !job.models.length || !job.sheet) return defaultJob();
     return {
       ...defaultJob(),
-      sheet: job.sheet,
+      // Only the pinza is a shop setting now; sheet size and gap come from the product.
+      sheet: { margin: job.sheet.margin ?? String(DEFAULT_SHEET.margin * 10) },
       // The per-design surcharge is a shop rate, not part of a saved quote: always start from the current default.
       kMod: String(K_MOD_DEFAULT),
       models: withGroups(job.models.slice(0, MAX_MODELS).map(normalizeModel)),
@@ -207,15 +203,7 @@ export function usePriceCalculator(coeficiente = 1) {
     return [...byId.values()];
   }, [job.models]);
 
-  const sheet = useMemo(
-    () => ({
-      w: parseFloat(job.sheet.w) || 0,
-      h: parseFloat(job.sheet.h) || 0,
-      margin: (parseFloat(job.sheet.margin) || 0) / 10,
-      gap: (parseFloat(job.sheet.gap) || 0) / 10,
-    }),
-    [job.sheet]
-  );
+  const margin = (parseFloat(job.sheet.margin) || 0) / 10;
 
   const active = useMemo(() => {
     const seen = new Map(); // position of each design inside its job, for default names
@@ -261,6 +249,7 @@ export function usePriceCalculator(coeficiente = 1) {
       byKey.get(key).models.push(m);
     }
     return [...byKey.values()].map((run) => {
+      const sheet = { ...run.product.sheet, margin };
       const layout = impose(run.models, sheet);
       const price = computePrice({
         layout,
@@ -271,9 +260,9 @@ export function usePriceCalculator(coeficiente = 1) {
         doubleSided: run.doubleSided,
         kMod: kModValue,
       });
-      return { ...run, layout, price };
+      return { ...run, sheet, layout, price };
     });
-  }, [active, sheet, coeficiente, kModValue]);
+  }, [active, margin, coeficiente, kModValue]);
 
   const priceResult = useMemo(() => {
     if (!runs.length || runs.some((r) => !r.price)) return null;
@@ -295,7 +284,6 @@ export function usePriceCalculator(coeficiente = 1) {
     setKMod: (kMod) => update({ kMod }),
     sheetInput: job.sheet,
     setSheetField: (key, value) => update((j) => ({ sheet: { ...j.sheet, [key]: value } })),
-    sheet,
     models: job.models,
     groups,
     addGroup,

@@ -25,11 +25,33 @@ export default function ShopSettings({ calc, dolar }) {
       </summary>
 
       <div className="space-y-8 border-t-2 border-ink p-5 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <NumberField name="sheet-w" label="Pliego ancho" suffix="cm" value={sheetInput.w} onChange={(e) => setSheetField("w", e.target.value)} />
-          <NumberField name="sheet-h" label="Pliego alto" suffix="cm" value={sheetInput.h} onChange={(e) => setSheetField("h", e.target.value)} />
+        <div>
+          <h3 className="display mb-3 text-lg">Pliego y calle por producto</h3>
+          <div className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+            <table className="w-full min-w-[420px] text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink">
+                  <th scope="col" className="py-2 pr-3 text-left">Producto</th>
+                  <th scope="col" className="px-2 py-2 text-right">Pliego</th>
+                  <th scope="col" className="px-2 py-2 text-right">Calle entre piezas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productOptions.map(([id, p]) => (
+                  <tr key={id} className="border-b border-line-soft">
+                    <th scope="row" className="py-2 pr-3 text-left font-medium">{p.label}</th>
+                    <td className="px-2 py-2 text-right">{p.sheet.w} × {p.sheet.h} cm</td>
+                    <td className="px-2 py-2 text-right">{Math.round(p.sheet.gap * 10)} mm</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-sm text-muted">Fijos según el producto.</p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <NumberField name="sheet-margin" label="Pinza por lado" suffix="mm" decimals={false} value={sheetInput.margin} onChange={(e) => setSheetField("margin", e.target.value)} />
-          <NumberField name="sheet-gap" label="Calle entre piezas" suffix="mm" decimals={false} value={sheetInput.gap} onChange={(e) => setSheetField("gap", e.target.value)} />
           <NumberField
             name="kmod"
             label="Por diseño extra"

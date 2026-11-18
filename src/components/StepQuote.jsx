@@ -130,7 +130,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
             title={multi ? runTitle(run) : null}
             layout={run.layout}
             active={run.models}
-            sheet={calc.sheet}
+            sheet={run.sheet}
             product={run.product}
             priceResult={run.price}
           />

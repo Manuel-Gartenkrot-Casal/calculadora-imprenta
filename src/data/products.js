@@ -1,4 +1,5 @@
-export const DEFAULT_SHEET = { w: 30, h: 40, margin: 0.5, gap: 0.7 };
+// Pinza (margen por lado) por defecto, en cm. Pliego y calle son fijos por producto (ver PRODUCTS).
+export const DEFAULT_SHEET = { margin: 0.5 };
 
 export const PRICE_TIERS = [20, 100, 200, Infinity];
 export const DOUBLE_SIDED_SURCHARGE = 0.2;
@@ -26,6 +27,7 @@ export const MODEL_COLORS = [
 export const PRODUCTS = {
   stickers: {
     label: "Stickers",
+    sheet: { w: 30, h: 40, gap: 0.5 }, // pliego 30 × 40 cm, calle 5 mm
     setupFee: 30000,
     description: "Etiquetas autoadhesivas en papel u OPP, con cualquier forma.",
     sizePresets: [[3, 3], [5, 5], [7, 7], [10, 10], [9, 5]],
@@ -45,6 +47,7 @@ export const PRODUCTS = {
   },
   tags: {
     label: "Tags / postales / tarjetas",
+    sheet: { w: 30, h: 40, gap: 1 }, // pliego 30 × 40 cm, calle 10 mm
     setupFee: 50000,
     description: "Cartulina gruesa para tags, postales y tarjetas, frente o frente y dorso.",
     sizePresets: [[5, 9], [9, 5], [10, 15], [6, 6]],
