@@ -38,7 +38,7 @@ export function runTitle(run) {
 // Condiciones comerciales que acompañan cada presupuesto (pantalla, mensajes y Excel).
 export const QUOTE_CONDITIONS = [
   ["Tiempo de entrega", "A convenir."],
-  ["Forma de pago", "50% por transferencia bancaria o Mercado Pago, y 50% con cheque a 30 días."],
+  ["Forma de pago", "50% por transferencia bancaria o Mercado Pago, y 50% con eCheq (cheque electrónico) a 30 días."],
   ["Factura", "Estos valores no incluyen IVA. Factura A y B."],
   ["Envíos", "A todo el país por Correo Argentino, Vía Cargo o en el expreso que nos indique. Consultar."],
 ];
