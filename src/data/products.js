@@ -11,10 +11,10 @@ export const QTY_PRESETS = [100, 250, 500, 1000];
 
 // Earthy, muted tones so the sheet preview stays calm but each design is still easy to tell apart.
 export const MODEL_COLORS = [
-  "#9a7354",
+  "#6b7552",
   "#4a4640",
   "#6b7f8e",
-  "#7d8a5c",
+  "#9a7354",
   "#b5674d",
   "#8c7a9b",
   "#c2a36b",

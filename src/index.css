@@ -8,10 +8,10 @@
   --color-ink: #1d1b18;
   --color-muted: #6e665b;
   --color-line-soft: #e0d8cb;
-  --color-primary: #9a7354;
-  --color-primary-strong: #7a5a40;
+  --color-primary: #6b7552;
+  --color-primary-strong: #545c3f;
   --color-on-primary: #fbf9f4;
-  --color-soft: #ece4d7;
+  --color-soft: #e6e8dc;
   --color-warn: #a3402e;
 
   --font-sans: "Manrope Variable", "Manrope", system-ui, -apple-system, sans-serif;
@@ -25,10 +25,10 @@
     --color-ink: #ece6dc;
     --color-muted: #a59c8f;
     --color-line-soft: #34312c;
-    --color-primary: #c49a76;
-    --color-primary-strong: #d6b291;
+    --color-primary: #a4ae88;
+    --color-primary-strong: #bdc6a2;
     --color-on-primary: #171614;
-    --color-soft: #2a2723;
+    --color-soft: #262a20;
     --color-warn: #e59a87;
   }
 }
