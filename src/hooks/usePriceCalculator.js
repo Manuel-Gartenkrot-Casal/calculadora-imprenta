@@ -221,6 +221,8 @@ export function usePriceCalculator(coeficiente = 1) {
           return {
             id: m.id,
             name: m.label.trim() || `Modelo ${pos}`,
+            pos,
+            label: m.label.trim(),
             color: MODEL_COLORS[i % MODEL_COLORS.length],
             productId: m.productId,
             product,

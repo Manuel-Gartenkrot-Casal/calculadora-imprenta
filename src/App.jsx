@@ -35,9 +35,24 @@ export default function App() {
 
   const handleCopy = async (target = "whatsapp") => {
     const mail = target === "mail";
-    const text = (mail ? buildEmailMessage : buildWhatsAppMessage)({ runs: calc.runs, result: r });
+    const data = { runs: calc.runs, result: r };
     try {
-      await navigator.clipboard.writeText(text);
+      if (mail) {
+        const { text, html } = buildEmailMessage(data);
+        try {
+          // Bold and lists survive when pasting into Gmail or Outlook.
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              "text/html": new Blob([html], { type: "text/html" }),
+              "text/plain": new Blob([text], { type: "text/plain" }),
+            }),
+          ]);
+        } catch {
+          await navigator.clipboard.writeText(text);
+        }
+      } else {
+        await navigator.clipboard.writeText(buildWhatsAppMessage(data));
+      }
       setCopied(target);
       setToast({ message: mail ? "Presupuesto copiado. Pegalo en el mail." : "Presupuesto copiado. Pegalo en el chat de WhatsApp." });
     } catch {

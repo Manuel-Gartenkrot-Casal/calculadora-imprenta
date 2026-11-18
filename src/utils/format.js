@@ -35,61 +35,111 @@ export function runTitle(run) {
   return `${run.paper.name}${run.product.doubleSided ? (run.doubleSided ? ", frente y dorso" : ", solo frente") : ""}`;
 }
 
-// b() marks a label: bold for WhatsApp, plain for mail.
-function runLines(run, withSubtotal, b, bullet) {
-  const models = run.models;
-  const n = models.length;
-  const totalUnits = models.reduce((s, m) => s + m.qty, 0);
-  const medidas = models.map((m) => `${m.name}: ${cm(m.rawW)} x ${cm(m.rawH)} cm`).join("; ");
-  const detalle = models.map((m) => `${m.name}: ${m.qty} u.`).join(", ");
-  return [
-    `${bullet} ${b("Producto:")} ${run.product.label} (${n} ${n === 1 ? "modelo" : "modelos"})`,
-    `${bullet} ${b("Papel:")} ${run.paper.name}`,
-    `${bullet} ${b("Impresión:")} ${run.doubleSided ? "Frente y dorso" : "Frente"}`,
-    `${bullet} ${b("Medidas:")} ${medidas}`,
-    `${bullet} ${b("Cantidad:")} ${totalUnits} u. (${detalle})`,
-    ...(withSubtotal ? [`${bullet} ${b("Subtotal:")} ${formatCurrency(run.price.total)}`] : []),
-  ];
-}
-
 // Condiciones comerciales que acompañan cada presupuesto (pantalla, mensajes y Excel).
 export const QUOTE_CONDITIONS = [
   ["Tiempo de entrega", "A convenir."],
-  ["Forma de pago", "Transferencia bancaria o Mercado Pago."],
-  ["Factura", "Estos valores no incluyen IVA. Factura A y C."],
+  ["Forma de pago", "50% por transferencia bancaria o Mercado Pago, y 50% con cheque a 30 días."],
+  ["Factura", "Estos valores no incluyen IVA. Factura A y B."],
   ["Envíos", "A todo el país por Correo Argentino, Vía Cargo o en el expreso que nos indique. Consultar."],
 ];
 
-function buildMessage({ runs, result }, mail) {
-  const multi = runs.length > 1;
+const GREETING = "Hola, ¿cómo estás? Te paso el presupuesto detallado de tu pedido.";
+const ABOUT =
+  "Nos caracterizamos por la producción de impresos biodegradables, realizados con tintas vegetales, papeles reciclados certificados y adhesivos al agua.";
+const VALIDITY = "Cotización calculada sobre pliego optimizado. Válida por 48 hs o sujeta a cambios.";
+
+// One quote, format-neutral: each item is a print run with its numbered designs, unit value and subtotal.
+function quoteData({ runs, result }) {
+  return {
+    total: result.total,
+    items: runs.map((run, i) => {
+      const units = run.price.unitsRequested;
+      return {
+        title: `${i + 1}. ${run.product.label}`,
+        rows: [
+          ["Producto", run.product.label],
+          ["Papel", run.paper.name],
+          ["Impresión", run.doubleSided ? "Frente y dorso" : "Frente"],
+        ],
+        models: run.models.map(
+          (m) => [`Modelo ${m.pos}${m.label ? ` (${m.label})` : ""}`, `${cm(m.rawW)} x ${cm(m.rawH)} cm, ${m.qty.toLocaleString("es-AR")} u.`]
+        ),
+        unit: `${formatCurrencyDecimal(run.price.total / units)} por ${run.product.unitSingular}`,
+        subtotal: `${formatCurrency(run.price.total)} (${units.toLocaleString("es-AR")} u.)`,
+      };
+    }),
+  };
+}
+
+function buildText(data, mail) {
+  const q = quoteData(data);
+  const multi = q.items.length > 1;
   const b = mail ? (t) => t : (t) => `*${t}*`;
   const bullet = mail ? "-" : "•";
   const h = (emoji, title) => (mail ? title.toUpperCase() : `${emoji} *${title}:*`);
-  const detalle = multi
-    ? runs.flatMap((run, i) => [b(`${i + 1}. ${runTitle(run)}`), ...runLines(run, true, b, bullet), ""])
-    : [...runLines(runs[0], false, b, bullet), ""];
-
+  const detalle = q.items.flatMap((it) => [
+    ...(multi ? [b(it.title)] : []),
+    ...it.rows.map(([k, v]) => `${bullet} ${b(`${k}:`)} ${v}`),
+    `${bullet} ${b("Cantidad por modelo:")}`,
+    ...it.models.map(([k, v]) => `   ${k}: ${v}`),
+    `${bullet} ${b("Valor unitario:")} ${it.unit}`,
+    `${bullet} ${b("Subtotal:")} ${it.subtotal}`,
+    "",
+  ]);
   return [
-    mail ? "Hola, ¿cómo estás? Te paso el presupuesto detallado de tu pedido." : "¡Hola! 👋 Te paso el presupuesto detallado de tu pedido:",
+    mail ? GREETING : "¡Hola! 👋 Te paso el presupuesto detallado de tu pedido.",
+    "",
+    mail ? ABOUT : `🌱 ${ABOUT}`,
     "",
     h("📄", "Detalle del trabajo"),
     ...detalle,
     h("💰", "Presupuesto"),
-    `${bullet} ${b("Total:")} ${formatCurrency(result.total)}`,
-    ...(multi ? [] : [`${bullet} ${b("Valor unitario:")} ${formatCurrencyDecimal(result.pricePerUnit)} por unidad`]),
+    mail ? `TOTAL: ${formatCurrency(q.total)}` : `*TOTAL: ${formatCurrency(q.total)}*`,
     "",
     h("📋", "Condiciones"),
     ...QUOTE_CONDITIONS.map(([k, v]) => `${bullet} ${b(`${k}:`)} ${v}`),
     "",
-    `${mail ? "" : "📌 "}Cotización calculada sobre pliegos optimizados. Válido por 48 hs.`,
+    `${mail ? "" : "📌 "}${VALIDITY}`,
     ...(mail ? ["", "Quedo a disposición por cualquier consulta.", "Saludos."] : []),
   ].join("\n");
 }
 
+const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Rich version for mail clients (Gmail, Outlook keep bold and lists when pasting).
+function buildEmailHtml(data) {
+  const q = quoteData(data);
+  const multi = q.items.length > 1;
+  const h = (t) => `<p style="margin:18px 0 6px"><b>${esc(t)}</b></p>`;
+  const li = (k, v) => `<li><b>${esc(k)}:</b> ${esc(v)}</li>`;
+  const items = q.items
+    .map(
+      (it) => `${multi ? `<p style="margin:12px 0 4px"><b>${esc(it.title)}</b></p>` : ""}<ul style="margin:0 0 8px">
+${it.rows.map(([k, v]) => li(k, v)).join("\n")}
+<li><b>Cantidad por modelo:</b><ul style="margin:4px 0;list-style:none;padding-left:16px">${it.models.map(([k, v]) => `<li>${esc(k)}: ${esc(v)}</li>`).join("")}</ul></li>
+${li("Valor unitario", it.unit)}
+${li("Subtotal", it.subtotal)}
+</ul>`
+    )
+    .join("\n");
+  return `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#1d1b18">
+<p>${esc(GREETING)}</p>
+<p><i>${esc(ABOUT)}</i></p>
+${h("DETALLE DEL TRABAJO")}
+${items}
+${h("PRESUPUESTO")}
+<p style="margin:0;font-size:22px"><b>TOTAL: ${esc(formatCurrency(q.total))}</b></p>
+${h("CONDICIONES")}
+<ul style="margin:0">${QUOTE_CONDITIONS.map(([k, v]) => li(k, v)).join("")}</ul>
+<p style="margin-top:16px">${esc(VALIDITY)}</p>
+<p>Quedo a disposición por cualquier consulta.<br>Saludos.</p>
+</div>`;
+}
+
 export function buildWhatsAppMessage(data) {
-  return buildMessage(data, false);
+  return buildText(data, false);
 }
 
 export function buildEmailMessage(data) {
-  return buildMessage(data, true);
+  return { text: buildText(data, true), html: buildEmailHtml(data) };
 }
