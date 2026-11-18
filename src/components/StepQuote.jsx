@@ -1,5 +1,5 @@
 import { WhatsappLogo, FileXls, Check, CaretDown } from "@phosphor-icons/react";
-import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle } from "../utils/format";
+import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, QUOTE_CONDITIONS } from "../utils/format";
 import LayoutPreview, { LayoutIssue } from "./LayoutPreview";
 
 function Row({ label, value }) {
@@ -82,6 +82,16 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
                 Descargar Excel
               </button>
             </div>
+
+            <dl className="mt-8 max-w-2xl border-t-2 border-on-primary/40 pt-4 text-sm">
+              <p className="display mb-2 text-xs">Condiciones</p>
+              {QUOTE_CONDITIONS.map(([k, v]) => (
+                <div key={k} className="flex flex-col gap-0.5 py-1 sm:flex-row sm:gap-3">
+                  <dt className="shrink-0 font-semibold sm:w-40">{k}</dt>
+                  <dd className="opacity-90">{v}</dd>
+                </div>
+              ))}
+            </dl>
 
             <details className="group mt-8 max-w-xl">
               <summary className="display flex cursor-pointer list-none items-center gap-2 text-sm [&::-webkit-details-marker]:hidden">

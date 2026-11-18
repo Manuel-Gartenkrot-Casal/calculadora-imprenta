@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { QUOTE_CONDITIONS } from "../utils/format";
 
 const GREEN_DARK = "FF1F2A20";
 const GREEN_MED = "FF5C6B57";
@@ -144,6 +145,28 @@ function buildWorkbook(ExcelJS, r, runs) {
     }
     rowNum++;
   });
+
+  // Condiciones comerciales
+  rowNum++;
+  ws1.mergeCells(rowNum, 1, rowNum, 2);
+  const ch = ws1.getCell(rowNum, 1);
+  ch.value = "CONDICIONES";
+  ch.font = { bold: true, size: 12, name: "Calibri", color: { argb: GREEN_DARK } };
+  ch.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN_HIGHLIGHT } };
+  rowNum++;
+  QUOTE_CONDITIONS.forEach(([k, v], i) => {
+    const c1 = ws1.getCell(rowNum, 1);
+    const c2 = ws1.getCell(rowNum, 2);
+    c1.value = k;
+    c2.value = v;
+    styleCell(c1, i % 2 === 0);
+    styleCell(c2, i % 2 === 0);
+    c1.font = { bold: true, size: 10, name: "Calibri" };
+    c1.alignment = { vertical: "top" };
+    c2.alignment = { wrapText: true, vertical: "top" };
+    rowNum++;
+  });
+  ws1.getColumn(2).width = 45;
 
   // === Hoja 2: Lista de precios ===
   const ws2 = workbook.addWorksheet("Lista de precios", { properties: { defaultColWidth: 18 } });

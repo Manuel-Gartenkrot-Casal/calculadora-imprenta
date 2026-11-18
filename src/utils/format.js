@@ -51,6 +51,14 @@ function runLines(run, withSubtotal) {
   ];
 }
 
+// Condiciones comerciales que acompañan cada presupuesto (pantalla, mensaje y Excel).
+export const QUOTE_CONDITIONS = [
+  ["Tiempo de entrega", "A convenir."],
+  ["Forma de pago", "Transferencia bancaria o Mercado Pago."],
+  ["Factura", "Estos valores no incluyen IVA. Factura A y C."],
+  ["Envíos", "A todo el país por Correo Argentino, Vía Cargo o en el expreso que nos indique. Consultar."],
+];
+
 export function buildWhatsAppMessage({ runs, result }) {
   const multi = runs.length > 1;
   const detalle = multi
@@ -65,6 +73,9 @@ export function buildWhatsAppMessage({ runs, result }) {
     "💰 *Presupuesto:*",
     `• *Total:* ${formatCurrency(result.total)}`,
     ...(multi ? [] : [`• *Valor unitario:* ${formatCurrencyDecimal(result.pricePerUnit)} por unidad`]),
+    "",
+    "📋 *Condiciones:*",
+    ...QUOTE_CONDITIONS.map(([k, v]) => `• *${k}:* ${v}`),
     "",
     "📌 Cotización calculada sobre pliegos optimizados. Válido por 48 hs.",
   ].join("\n");
