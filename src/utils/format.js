@@ -36,9 +36,18 @@ export function runTitle(run) {
 }
 
 // Condiciones comerciales que acompañan cada presupuesto (pantalla, mensajes y Excel).
-export const QUOTE_CONDITIONS = [
-  ["Tiempo de entrega", "A convenir."],
-  ["Forma de pago", "50% por transferencia bancaria o Mercado Pago, y 50% con eCheq (cheque electrónico) a 30 días."],
+// Above this total the second half can be paid with a 30-day eCheq; below it, before shipping or delivery.
+export const ECHEQ_MIN_TOTAL = 100000;
+
+export function quoteConditions(total) {
+  const pago =
+    total > ECHEQ_MIN_TOTAL
+      ? "50% por transferencia bancaria o Mercado Pago, y 50% con eCheq (cheque electrónico) a 30 días."
+      : "50% por transferencia bancaria o Mercado Pago, y el 50% restante antes del envío o la entrega.";
+  return [["Tiempo de entrega", "A convenir."], ["Forma de pago", pago], ...FIXED_CONDITIONS];
+}
+
+const FIXED_CONDITIONS = [
   ["Factura", "Estos valores no incluyen IVA. Factura A y B."],
   ["Envíos", "A todo el país por Correo Argentino, Vía Cargo o en el expreso que nos indique. Consultar."],
 ];
@@ -97,7 +106,7 @@ function buildText(data, mail) {
     mail ? `TOTAL: ${formatCurrency(q.total)}` : `*TOTAL: ${formatCurrency(q.total)}*`,
     "",
     h("📋", "Condiciones"),
-    ...QUOTE_CONDITIONS.map(([k, v]) => `${bullet} ${b(`${k}:`)} ${v}`),
+    ...quoteConditions(q.total).map(([k, v]) => `${bullet} ${b(`${k}:`)} ${v}`),
     "",
     `${mail ? "" : "📌 "}${VALIDITY}`,
     ...(mail ? ["", "Quedo a disposición por cualquier consulta.", "Saludos."] : []),
@@ -130,7 +139,7 @@ ${items}
 ${h("PRESUPUESTO")}
 <p style="margin:0;font-size:22px"><b>TOTAL: ${esc(formatCurrency(q.total))}</b></p>
 ${h("CONDICIONES")}
-<ul style="margin:0">${QUOTE_CONDITIONS.map(([k, v]) => li(k, v)).join("")}</ul>
+<ul style="margin:0">${quoteConditions(q.total).map(([k, v]) => li(k, v)).join("")}</ul>
 <p style="margin-top:16px">${esc(VALIDITY)}</p>
 <p>Quedo a disposición por cualquier consulta.<br>Saludos.</p>
 </div>`;

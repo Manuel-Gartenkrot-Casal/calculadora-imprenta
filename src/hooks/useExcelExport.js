@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { QUOTE_CONDITIONS } from "../utils/format";
+import { quoteConditions } from "../utils/format";
 import { DOUBLE_SIDED_SURCHARGE } from "../data/products";
 
 const GREEN_DARK = "FF1F2A20";
@@ -155,7 +155,7 @@ function buildWorkbook(ExcelJS, r, runs) {
   ch.font = { bold: true, size: 12, name: "Calibri", color: { argb: GREEN_DARK } };
   ch.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN_HIGHLIGHT } };
   rowNum++;
-  QUOTE_CONDITIONS.forEach(([k, v], i) => {
+  quoteConditions(r.total).forEach(([k, v], i) => {
     const c1 = ws1.getCell(rowNum, 1);
     const c2 = ws1.getCell(rowNum, 2);
     c1.value = k;

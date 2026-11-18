@@ -1,5 +1,5 @@
 import { WhatsappLogo, EnvelopeSimple, FileXls, Check, CaretDown, ArrowCounterClockwise } from "@phosphor-icons/react";
-import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, QUOTE_CONDITIONS } from "../utils/format";
+import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, quoteConditions } from "../utils/format";
 import LayoutPreview, { LayoutIssue } from "./LayoutPreview";
 
 function Row({ label, value }) {
@@ -93,7 +93,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
 
             <dl className="mt-8 max-w-2xl border-t border-surface/20 pt-4 text-sm">
               <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] opacity-70">Condiciones</p>
-              {QUOTE_CONDITIONS.map(([k, v]) => (
+              {quoteConditions(r.total).map(([k, v]) => (
                 <div key={k} className="flex flex-col gap-0.5 py-1 sm:flex-row sm:gap-3">
                   <dt className="shrink-0 font-semibold sm:w-40">{k}</dt>
                   <dd className="opacity-90">{v}</dd>
