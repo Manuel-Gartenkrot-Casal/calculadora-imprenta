@@ -64,7 +64,8 @@ function quoteData({ runs, result }) {
     items: runs.map((run, i) => {
       const units = run.price.unitsRequested;
       return {
-        title: `${i + 1}. ${run.product.label}`,
+        title: `Trabajo ${i + 1}: ${run.product.label}`,
+        n: i + 1,
         rows: [
           ["Producto", run.product.label],
           ["Papel", run.paper.name],
@@ -92,7 +93,7 @@ function buildText(data, mail) {
     `${bullet} ${b("Cantidad por modelo:")}`,
     ...it.models.map(([k, v]) => `   ${k}: ${v}`),
     `${bullet} ${b("Valor unitario:")} ${it.unit}`,
-    `${bullet} ${b("Subtotal:")} ${it.subtotal}`,
+    `${bullet} ${b(multi ? `Subtotal trabajo ${it.n}:` : "Subtotal:")} ${it.subtotal}`,
     "",
   ]);
   return [
@@ -127,7 +128,7 @@ function buildEmailHtml(data) {
 ${it.rows.map(([k, v]) => li(k, v)).join("\n")}
 <li><b>Cantidad por modelo:</b><ul style="margin:4px 0;list-style:none;padding-left:16px">${it.models.map(([k, v]) => `<li>${esc(k)}: ${esc(v)}</li>`).join("")}</ul></li>
 ${li("Valor unitario", it.unit)}
-${li("Subtotal", it.subtotal)}
+${li(multi ? `Subtotal trabajo ${it.n}` : "Subtotal", it.subtotal)}
 </ul>`
     )
     .join("\n");

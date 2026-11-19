@@ -125,6 +125,7 @@ export default function App() {
         <main className="space-y-20 sm:space-y-28">
           <ModelList
             groups={calc.groups}
+            runs={calc.runs}
             totalModels={calc.models.length}
             productOptions={calc.productOptions}
             coeficiente={dolar.coeficiente}

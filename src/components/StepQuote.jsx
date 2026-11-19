@@ -59,7 +59,9 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
                   <li key={run.key} className="flex justify-between gap-4 border-b border-surface/15 py-1.5">
                     <span>
                       <span className="font-semibold">{runTitle(run)}</span>
-                      <span className="opacity-85">, {run.price.unitsRequested.toLocaleString("es-AR")} u.</span>
+                      <span className="opacity-85">
+                        , {run.price.unitsRequested.toLocaleString("es-AR")} u. a {formatCurrencyDecimal(run.price.total / run.price.unitsRequested)} c/u
+                      </span>
                     </span>
                     <span className="shrink-0 font-semibold">{formatCurrency(run.price.total)}</span>
                   </li>

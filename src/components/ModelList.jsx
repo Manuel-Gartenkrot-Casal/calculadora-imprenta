@@ -1,7 +1,7 @@
 import { Plus, Minus, X, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { MAX_MODELS, MODEL_COLORS, PRODUCTS, QTY_PRESETS, DOUBLE_SIDED_SURCHARGE } from "../data/products";
 import { NumberField, Chip, StepTitle } from "./Field";
-import { formatCurrency } from "../utils/format";
+import { formatCurrency, formatCurrencyDecimal } from "../utils/format";
 
 const invalid = (v) => !(parseFloat(v) > 0);
 const same = (a, b) => parseFloat(a) === b;
@@ -74,8 +74,37 @@ function DesignFields({ m, product, updateModel }) {
 
 const incomplete = (m) => invalid(m.width) || (m.shape === "rect" && invalid(m.height)) || !(parseInt(m.qty, 10) > 0);
 
+// Subtotal and unit value of one job, from the print run it belongs to.
+function JobSubtotal({ g, title, product, runs }) {
+  const ids = new Set(g.models.map((m) => m.id));
+  const run = runs.find((r) => r.models.some((m) => ids.has(m.id)));
+  const shared = run && run.models.some((m) => !ids.has(m.id));
+  if (!run?.price) {
+    return <p className="mt-6 border-t border-line-soft pt-5 text-sm text-muted">El subtotal aparece cuando están completas la medida y la cantidad.</p>;
+  }
+  const p = run.price;
+  return (
+    <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-t border-line-soft pt-5">
+      <div>
+        <span className="label">Valor unitario</span>
+        <p className="text-lg">
+          {formatCurrencyDecimal(p.total / p.unitsRequested)} <span className="text-sm text-muted">por {product.unitSingular}</span>
+        </p>
+      </div>
+      <div className="text-right">
+        <span className="label">{title === "Tu trabajo" ? "Subtotal" : `Subtotal ${title.toLowerCase()}`}</span>
+        <p className="display text-3xl">{formatCurrency(p.total)}</p>
+        <p className="text-xs text-muted">
+          {p.unitsRequested.toLocaleString("es-AR")} u.{shared && ", junto con el otro trabajo del mismo papel"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ModelList({
   groups,
+  runs,
   totalModels,
   productOptions,
   coeficiente,
@@ -248,6 +277,8 @@ export default function ModelList({
                   )}
                 </>
               )}
+
+              <JobSubtotal g={g} title={title} product={product} runs={runs} />
             </li>
           );
         })}
