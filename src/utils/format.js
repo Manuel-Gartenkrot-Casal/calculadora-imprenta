@@ -36,12 +36,12 @@ export function runTitle(run) {
 }
 
 // Condiciones comerciales que acompañan cada presupuesto (pantalla, mensajes y Excel).
-// Above this total the second half can be paid with a 30-day eCheq; below it, before shipping or delivery.
-export const ECHEQ_MIN_TOTAL = 100000;
+// From this total up the second half can be paid with a 30-day eCheq; below it, before shipping or delivery.
+export const ECHEQ_MIN_TOTAL = 300000;
 
 export function quoteConditions(total) {
   const pago =
-    total > ECHEQ_MIN_TOTAL
+    total >= ECHEQ_MIN_TOTAL
       ? "50% por transferencia bancaria o Mercado Pago, y 50% con eCheq (cheque electrónico) a 30 días."
       : "50% por transferencia bancaria o Mercado Pago, y el 50% restante antes del envío o la entrega.";
   return [["Tiempo de entrega", "A convenir."], ["Forma de pago", pago], ...FIXED_CONDITIONS];
