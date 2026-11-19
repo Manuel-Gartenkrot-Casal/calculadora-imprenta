@@ -64,8 +64,8 @@ function quoteData({ runs, result }) {
     items: runs.map((run, i) => {
       const units = run.price.unitsRequested;
       return {
-        title: `Trabajo ${i + 1}: ${run.product.label}`,
-        n: i + 1,
+        title: `Trabajo ${run.n}: ${run.product.label}`,
+        n: run.n,
         rows: [
           ["Producto", run.product.label],
           ["Papel", run.paper.name],

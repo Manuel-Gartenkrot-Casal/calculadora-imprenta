@@ -224,6 +224,7 @@ export function usePriceCalculator(coeficiente = 1) {
             pos,
             label: m.label.trim(),
             color: MODEL_COLORS[i % MODEL_COLORS.length],
+            groupId: m.groupId,
             productId: m.productId,
             product,
             paper,
@@ -242,13 +243,15 @@ export function usePriceCalculator(coeficiente = 1) {
 
   const kModValue = parseFloat(job.kMod) || 0;
 
-  // Items with the same product, paper and sides share sheets: each group is one print run
-  // with its own sheet count, price tier, machine setup and per-design surcharge.
+  // Every job is quoted on its own sheets, even when two jobs use the same paper: each one has its
+  // own sheet count, price tier, machine setup and per-design surcharge. n is the job's number on screen.
   const runs = useMemo(() => {
+    const jobNumber = new Map(groups.map((g, i) => [g.id, i + 1]));
     const byKey = new Map();
     for (const m of active) {
-      const key = runKey(m);
-      if (!byKey.has(key)) byKey.set(key, { key, product: m.product, paper: m.paper, doubleSided: m.doubleSided, models: [] });
+      const key = `job-${m.groupId}`;
+      if (!byKey.has(key))
+        byKey.set(key, { key, n: jobNumber.get(m.groupId), product: m.product, paper: m.paper, doubleSided: m.doubleSided, models: [] });
       byKey.get(key).models.push(m);
     }
     return [...byKey.values()].map((run) => {
@@ -265,7 +268,7 @@ export function usePriceCalculator(coeficiente = 1) {
       });
       return { ...run, sheet, layout, price };
     });
-  }, [active, margin, coeficiente, kModValue]);
+  }, [active, groups, margin, coeficiente, kModValue]);
 
   const priceResult = useMemo(() => {
     if (!runs.length || runs.some((r) => !r.price)) return null;

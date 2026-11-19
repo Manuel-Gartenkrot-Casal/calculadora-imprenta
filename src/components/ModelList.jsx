@@ -78,7 +78,6 @@ const incomplete = (m) => invalid(m.width) || (m.shape === "rect" && invalid(m.h
 function JobSubtotal({ g, title, product, runs }) {
   const ids = new Set(g.models.map((m) => m.id));
   const run = runs.find((r) => r.models.some((m) => ids.has(m.id)));
-  const shared = run && run.models.some((m) => !ids.has(m.id));
   if (!run?.price) {
     return <p className="mt-6 border-t border-line-soft pt-5 text-sm text-muted">El subtotal aparece cuando están completas la medida y la cantidad.</p>;
   }
@@ -95,7 +94,7 @@ function JobSubtotal({ g, title, product, runs }) {
         <span className="label">{title === "Tu trabajo" ? "Subtotal" : `Subtotal ${title.toLowerCase()}`}</span>
         <p className="display text-3xl">{formatCurrency(p.total)}</p>
         <p className="text-xs text-muted">
-          {p.unitsRequested.toLocaleString("es-AR")} u.{shared && ", junto con el otro trabajo del mismo papel"}
+          {p.unitsRequested.toLocaleString("es-AR")} u.
         </p>
       </div>
     </div>
@@ -299,7 +298,7 @@ export default function ModelList({
           Nuevo presupuesto
         </button>
       </div>
-      {canAdd && <p className="mt-2 text-xs text-muted">Otro trabajo = otro producto o papel (por ejemplo, tags además de stickers).</p>}
+      {canAdd && <p className="mt-2 text-xs text-muted">Cada trabajo se presupuesta en su propio pliego, con su entrada de máquina.</p>}
     </section>
   );
 }

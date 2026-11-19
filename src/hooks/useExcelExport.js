@@ -77,7 +77,7 @@ function buildWorkbook(ExcelJS, r, runs) {
   runs.forEach((run, n) => {
     const p = run.price;
     const layout = run.layout;
-    if (multi) data.push([`TIRADA ${n + 1}: ${run.paper.name}`, "SECTION"]);
+    if (multi) data.push([`TRABAJO ${run.n}: ${run.product.label} - ${run.paper.name}`, "SECTION"]);
     data.push(
       ["Producto", run.product.label],
       ["Papel / material", run.paper.name],

@@ -24,7 +24,7 @@ export default function LayoutPreview({ title, layout, active, sheet, product, p
 
   return (
     <div className="panel p-4 text-ink sm:p-6">
-      <h3 className="display mb-1 text-xl sm:text-2xl">{title ? `Pliego: ${title}` : "Así queda tu pliego"}</h3>
+      <h3 className="display mb-1 text-xl sm:text-2xl">{title ? `Pliego del ${title}` : "Así queda tu pliego"}</h3>
       <p className="mb-5 text-sm text-muted">
         Entran {layout.perSheet} piezas por pliego y hacen falta {layout.sheets} pliegos.
       </p>
