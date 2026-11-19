@@ -84,6 +84,17 @@ function loadJob() {
   }
 }
 
+// Put designs on a sheet in order; when one no longer fits next to the others, start another part.
+function splitBySheet(models, sheet) {
+  const parts = [[]];
+  for (const m of models) {
+    const current = parts[parts.length - 1];
+    if (current.length && impose([...current, m], sheet).error === "no-room") parts.push([m]);
+    else current.push(m);
+  }
+  return parts;
+}
+
 const nextIdOf = (models) => Math.max(0, ...models.map((m) => m.id)) + 1;
 
 export function runKey(m) {
@@ -245,17 +256,22 @@ export function usePriceCalculator(coeficiente = 1) {
 
   // Every job is quoted on its own sheets, even when two jobs use the same paper: each one has its
   // own sheet count, price tier, machine setup and per-design surcharge. n is the job's number on screen.
+  // A job whose designs don't all fit together on one sheet is split: the designs that don't fit go to
+  // another part, quoted as a separate job with its own machine setup.
   const runs = useMemo(() => {
-    const jobNumber = new Map(groups.map((g, i) => [g.id, i + 1]));
-    const byKey = new Map();
-    for (const m of active) {
-      const key = `job-${m.groupId}`;
-      if (!byKey.has(key))
-        byKey.set(key, { key, n: jobNumber.get(m.groupId), product: m.product, paper: m.paper, doubleSided: m.doubleSided, models: [] });
-      byKey.get(key).models.push(m);
-    }
-    return [...byKey.values()].map((run) => {
-      const sheet = { ...run.product.sheet, margin };
+    const out = [];
+    groups.forEach((g, gi) => {
+      const models = active.filter((m) => m.groupId === g.id);
+      if (!models.length) return;
+      const { product, paper, doubleSided } = models[0];
+      const sheet = { ...product.sheet, margin };
+      const parts = splitBySheet(models, sheet);
+      parts.forEach((partModels, pi) =>
+        out.push({ key: `job-${g.id}-${pi}`, n: gi + 1, part: pi + 1, parts: parts.length, groupId: g.id, product, paper, doubleSided, sheet, models: partModels })
+      );
+    });
+    return out.map((run) => {
+      const { sheet } = run;
       const layout = impose(run.models, sheet);
       const price = computePrice({
         layout,
@@ -265,8 +281,9 @@ export function usePriceCalculator(coeficiente = 1) {
         coeficiente,
         doubleSided: run.doubleSided,
         kMod: kModValue,
+        includedModels: run.product.includedModels,
       });
-      return { ...run, sheet, layout, price };
+      return { ...run, layout, price };
     });
   }, [active, groups, margin, coeficiente, kModValue]);
 

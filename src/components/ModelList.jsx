@@ -74,14 +74,17 @@ function DesignFields({ m, product, updateModel }) {
 
 const incomplete = (m) => invalid(m.width) || (m.shape === "rect" && invalid(m.height)) || !(parseInt(m.qty, 10) > 0);
 
-// Subtotal and unit value of one job, from the print run it belongs to.
+// Subtotal and unit value of one job, adding up its parts when the designs needed more than one sheet.
 function JobSubtotal({ g, title, product, runs }) {
-  const ids = new Set(g.models.map((m) => m.id));
-  const run = runs.find((r) => r.models.some((m) => ids.has(m.id)));
-  if (!run?.price) {
+  const mine = runs.filter((r) => r.groupId === g.id);
+  if (!mine.length || mine.some((r) => !r.price)) {
     return <p className="mt-6 border-t border-line-soft pt-5 text-sm text-muted">El subtotal aparece cuando están completas la medida y la cantidad.</p>;
   }
-  const p = run.price;
+  const p = {
+    total: mine.reduce((s, r) => s + r.price.total, 0),
+    unitsRequested: mine.reduce((s, r) => s + r.price.unitsRequested, 0),
+  };
+  const split = mine.length > 1;
   return (
     <div className="mt-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-t border-line-soft pt-5">
       <div>
@@ -97,6 +100,12 @@ function JobSubtotal({ g, title, product, runs }) {
           {p.unitsRequested.toLocaleString("es-AR")} u.
         </p>
       </div>
+      {split && (
+        <p className="w-full text-sm text-muted">
+          No entran todos los modelos en un mismo pliego: se arma en {mine.length} partes, cada una como un trabajo aparte con su
+          entrada de máquina ({mine.map((r) => `parte ${r.part}: ${r.models.length} ${r.models.length === 1 ? "modelo" : "modelos"}`).join(", ")}).
+        </p>
+      )}
     </div>
   );
 }
@@ -233,8 +242,9 @@ export default function ModelList({
                 </div>
                 <p className="mt-2 text-xs text-muted">
                   {multi
-                    ? `Cargá la medida y la cantidad de cada modelo. Van todos juntos en el mismo pliego.`
+                    ? `Cargá la medida y la cantidad de cada modelo. Van juntos en el mismo pliego; si no entran, los que sobran pasan a otra parte con su propia entrada de máquina.`
                     : "Un solo modelo: cargá la medida y la cantidad."}
+                  {product.includedModels > 1 && ` La entrada de máquina incluye hasta ${product.includedModels} modelos; desde el ${product.includedModels + 1}.º se suma el recargo por diseño.`}
                 </p>
               </div>
 

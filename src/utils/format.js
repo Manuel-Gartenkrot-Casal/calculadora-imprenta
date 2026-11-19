@@ -30,6 +30,11 @@ export function tierIndexForSheets(sheets, tiers) {
 
 const cm = (n) => n.toLocaleString("es-AR");
 
+// "Trabajo 2", or "Trabajo 2 · parte 1" when a job's designs didn't fit on one sheet and were split.
+export function jobName(run) {
+  return `Trabajo ${run.n}${run.parts > 1 ? ` · parte ${run.part}` : ""}`;
+}
+
 // A print run groups the items that share product, paper and sides.
 export function runTitle(run) {
   return `${run.paper.name}${run.product.doubleSided ? (run.doubleSided ? ", frente y dorso" : ", solo frente") : ""}`;
@@ -64,8 +69,8 @@ function quoteData({ runs, result }) {
     items: runs.map((run, i) => {
       const units = run.price.unitsRequested;
       return {
-        title: `Trabajo ${run.n}: ${run.product.label}`,
-        n: run.n,
+        title: `${jobName(run)}: ${run.product.label}`,
+        name: jobName(run).toLowerCase(),
         rows: [
           ["Producto", run.product.label],
           ["Papel", run.paper.name],
@@ -93,7 +98,7 @@ function buildText(data, mail) {
     `${bullet} ${b("Cantidad por modelo:")}`,
     ...it.models.map(([k, v]) => `   ${k}: ${v}`),
     `${bullet} ${b("Valor unitario:")} ${it.unit}`,
-    `${bullet} ${b(multi ? `Subtotal trabajo ${it.n}:` : "Subtotal:")} ${it.subtotal}`,
+    `${bullet} ${b(multi ? `Subtotal ${it.name}:` : "Subtotal:")} ${it.subtotal}`,
     "",
   ]);
   return [
@@ -128,7 +133,7 @@ function buildEmailHtml(data) {
 ${it.rows.map(([k, v]) => li(k, v)).join("\n")}
 <li><b>Cantidad por modelo:</b><ul style="margin:4px 0;list-style:none;padding-left:16px">${it.models.map(([k, v]) => `<li>${esc(k)}: ${esc(v)}</li>`).join("")}</ul></li>
 ${li("Valor unitario", it.unit)}
-${li(multi ? `Subtotal trabajo ${it.n}` : "Subtotal", it.subtotal)}
+${li(multi ? `Subtotal ${it.name}` : "Subtotal", it.subtotal)}
 </ul>`
     )
     .join("\n");

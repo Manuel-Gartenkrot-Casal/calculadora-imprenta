@@ -1,5 +1,5 @@
 import { WhatsappLogo, EnvelopeSimple, FileXls, Check, CaretDown, ArrowCounterClockwise } from "@phosphor-icons/react";
-import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, quoteConditions } from "../utils/format";
+import { formatCurrency, formatCurrencyDecimal, tierLabel, runTitle, jobName, quoteConditions } from "../utils/format";
 import LayoutPreview, { LayoutIssue } from "./LayoutPreview";
 
 function Row({ label, value }) {
@@ -58,7 +58,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
                 {runs.map((run) => (
                   <li key={run.key} className="flex justify-between gap-4 border-b border-surface/15 py-1.5">
                     <span>
-                      <span className="font-semibold">Trabajo {run.n}</span>
+                      <span className="font-semibold">{jobName(run)}</span>
                       <span className="opacity-85"> · {runTitle(run)}</span>
                       <span className="opacity-85">
                         , {run.price.unitsRequested.toLocaleString("es-AR")} u. a {formatCurrencyDecimal(run.price.total / run.price.unitsRequested)} c/u
@@ -112,7 +112,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
               <div className="mt-4 space-y-6">
                 {runs.map((run) => (
                   <div key={run.key}>
-                    {multi && <h3 className="display mb-1 text-base">Trabajo {run.n} · {runTitle(run)}</h3>}
+                    {multi && <h3 className="display mb-1 text-base">{jobName(run)} · {runTitle(run)}</h3>}
                     <RunBreakdown run={run} />
                   </div>
                 ))}
@@ -134,7 +134,7 @@ export default function StepQuote({ calc, priceResult: r, onCopy, copied, onExpo
         runs.map((run) => (
           <LayoutPreview
             key={run.key}
-            title={multi ? `trabajo ${run.n} · ${runTitle(run)}` : null}
+            title={multi ? `${jobName(run).toLowerCase()} · ${runTitle(run)}` : null}
             layout={run.layout}
             active={run.models}
             sheet={run.sheet}

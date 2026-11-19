@@ -5,7 +5,7 @@ export const PRICE_TIERS = [20, 100, 200, Infinity];
 export const DOUBLE_SIDED_SURCHARGE = 0.5; // frente y dorso: +50%
 export const CURVE_LIMIT = 100;
 export const K_MOD_DEFAULT = 10000;
-export const MAX_MODELS = 12;
+export const MAX_MODELS = 24;
 
 export const QTY_PRESETS = [100, 250, 500, 1000];
 
@@ -28,6 +28,7 @@ export const MODEL_COLORS = [
 export const PRODUCTS = {
   stickers: {
     label: "Stickers",
+    includedModels: 4, // la entrada de máquina incluye hasta 4 modelos; desde el 5.º se cobra el recargo por diseño
     sheet: { w: 30, h: 40, gap: 0.5 }, // pliego 30 × 40 cm, calle 5 mm
     setupFee: 30000,
     description: "Etiquetas autoadhesivas en papel u OPP, con cualquier forma.",
@@ -48,6 +49,7 @@ export const PRODUCTS = {
   },
   tags: {
     label: "Tags / postales / tarjetas",
+    includedModels: 1,
     sheet: { w: 30, h: 40, gap: 1 }, // pliego 30 × 40 cm, calle 10 mm
     setupFee: 50000,
     description: "Cartulina gruesa para tags, postales y tarjetas, frente o frente y dorso.",

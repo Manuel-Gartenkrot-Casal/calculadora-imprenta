@@ -42,6 +42,16 @@ describe("computePrice", () => {
     expect(r.total).toBe(Math.round(115360 + 30000 * 1.03 + 2 * 10000));
   });
 
+  it("includes the first four sticker designs in the machine setup", () => {
+    const six = Array.from({ length: 6 }, () => ({ w: 5, h: 5, qty: 100 }));
+    const four = quote(six.slice(0, 4), { paper: blanco, setupFee: 30000, kMod: 10000, includedModels: 4 });
+    expect(four.extraModels).toBe(0);
+    expect(four.extraModelsCost).toBe(0);
+    const r = quote(six, { paper: blanco, setupFee: 30000, kMod: 10000, includedModels: 4 });
+    expect(r.extraModels).toBe(2);
+    expect(r.extraModelsCost).toBe(20000);
+  });
+
   it("applies the double-sided surcharge on the sheet price", () => {
     const five = Array.from({ length: 5 }, () => ({ w: 5, h: 5, qty: 500 }));
     const models = [{ w: 9, h: 5, qty: 300 }, { w: 10, h: 15, qty: 100 }, { w: 4, h: 4, qty: 200 }, ...five].map(

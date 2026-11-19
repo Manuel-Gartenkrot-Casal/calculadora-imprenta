@@ -6,7 +6,7 @@ export function curveMultiplier(sheets) {
 }
 
 // layout: result of impose(); models: active models with qty.
-export function computePrice({ layout, models, paper, setupFee = 0, coeficiente = 1, doubleSided = false, kMod = 0 }) {
+export function computePrice({ layout, models, paper, setupFee = 0, coeficiente = 1, doubleSided = false, kMod = 0, includedModels = 1 }) {
   if (!layout || layout.error || !models.length) return null;
   const sheetsNeeded = layout.sheets;
   const tierIdx = tierIndexForSheets(sheetsNeeded, PRICE_TIERS);
@@ -16,7 +16,8 @@ export function computePrice({ layout, models, paper, setupFee = 0, coeficiente 
   const doubleSidedMult = doubleSided ? 1 + DOUBLE_SIDED_SURCHARGE : 1;
   const pricePerSheet = dolarPrice * curveMult * doubleSidedMult;
   const sheetsCost = sheetsNeeded * pricePerSheet;
-  const extraModels = models.length - 1;
+  // The machine setup covers the first includedModels designs; each one after that adds kMod.
+  const extraModels = Math.max(0, models.length - includedModels);
   const extraModelsCost = extraModels * kMod;
   // Machine setup follows the dollar like the sheet price; the per-model surcharge is a flat ARS amount.
   const setupCost = setupFee * coeficiente;
@@ -36,6 +37,7 @@ export function computePrice({ layout, models, paper, setupFee = 0, coeficiente 
     setupFee,
     setupCost,
     extraModels,
+    includedModels,
     kMod,
     extraModelsCost,
     total,

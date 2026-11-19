@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { quoteConditions } from "../utils/format";
+import { quoteConditions, jobName } from "../utils/format";
 import { DOUBLE_SIDED_SURCHARGE } from "../data/products";
 
 const GREEN_DARK = "FF1F2A20";
@@ -77,7 +77,7 @@ function buildWorkbook(ExcelJS, r, runs) {
   runs.forEach((run, n) => {
     const p = run.price;
     const layout = run.layout;
-    if (multi) data.push([`TRABAJO ${run.n}: ${run.product.label} - ${run.paper.name}`, "SECTION"]);
+    if (multi) data.push([`${jobName(run).toUpperCase()}: ${run.product.label} - ${run.paper.name}`, "SECTION"]);
     data.push(
       ["Producto", run.product.label],
       ["Papel / material", run.paper.name],

@@ -64,8 +64,8 @@ export default function ShopSettings({ calc, dolar }) {
         </div>
 
         <p className="text-sm text-muted">
-          Entrada de máquina por trabajo (cada trabajo va en su propio pliego, e incluye su primer diseño), ajustada por dólar:{" "}
-          {productOptions.map(([id, p]) => `${p.label} ${formatCurrency(p.setupFee)}`).join(", ")}. Dólar oficial hoy{" "}
+          Entrada de máquina por trabajo (cada trabajo va en su propio pliego), ajustada por dólar:{" "}
+          {productOptions.map(([id, p]) => `${p.label} ${formatCurrency(p.setupFee)} (incluye ${p.includedModels} ${p.includedModels === 1 ? "diseño" : "diseños"})`).join(", ")}. Cada diseño extra suma el monto de arriba. Dólar oficial hoy{" "}
           {formatCurrency(dolar.dolarActual)} ({dolar.fecha}), base {formatCurrency(dolar.dolarBase)} del {dolar.fechaBase}, coeficiente{" "}
           {dolar.coeficiente.toFixed(4)}.{dolar.error && " Sin conexión: se usa el último valor guardado."}
         </p>
